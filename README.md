@@ -18,6 +18,14 @@ Notes are stored in an SQLite database (support for more databases is coming). S
 
 ![qnote](https://cloud.githubusercontent.com/assets/1073151/23344901/9a02f7fc-fc52-11e6-95c9-792f3bebf879.gif)
 
+## Install
+
+If you have not already done so, you need to setup [Golang](https://golang.org/). Than you just run
+
+	go get github.com/anmil/quicknote/cmd/qnote
+
+This will pull the library and build it into you Golang bin directory.
+
 ## Creating Books
 
 Book allow you to keep related notes separated from each other, such as work notes vs personal notes. Unless stated otherwise, every action is preformed only on the working book. You can change the working book with the `-n` flag.
