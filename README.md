@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/anmil/quicknote.svg?branch=master)](https://travis-ci.org/anmil/quicknote) [![Go Report Card](https://goreportcard.com/badge/github.com/anmil/quicknote)](https://goreportcard.com/report/github.com/anmil/quicknote)
+[![GoDoc](https://godoc.org/github.com/anmil/quicknote?status.svg)](https://godoc.org/github.com/anmil/quicknote) [![Build Status](https://travis-ci.org/anmil/quicknote.svg?branch=master)](https://travis-ci.org/anmil/quicknote) [![Go Report Card](https://goreportcard.com/badge/github.com/anmil/quicknote)](https://goreportcard.com/report/github.com/anmil/quicknote)
 
 ## What is QuickNote?
 
