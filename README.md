@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/anmil/quicknote.svg?branch=master)](https://travis-ci.org/anmil/quicknote)
+[![Build Status](https://travis-ci.org/anmil/quicknote.svg?branch=master)](https://travis-ci.org/anmil/quicknote) [![Go Report Card](https://goreportcard.com/badge/github.com/anmil/quicknote)](https://goreportcard.com/report/github.com/anmil/quicknote)
 
 ## What is QuickNote?
 
