@@ -1,0 +1,11 @@
+go_import_path: github.com/anmil/quicknote/cmd/qnote
+
+language: go
+go:
+  - 1.7
+  - 1.8
+  - master
+
+os:
+  - linux
+  - osx
