@@ -18,7 +18,7 @@ Qnote allows you to quickly create and search tens of thousands of short notes.
 
 Notes are stored in an SQLite database (support for more databases is coming). Searching is provided by Bleve (default) or Elasticsearch with some extra setup.
 
-![qnote](https://cloud.githubusercontent.com/assets/1073151/23344901/9a02f7fc-fc52-11e6-95c9-792f3bebf879.gif)
+![qnote](https://cloud.githubusercontent.com/assets/1073151/23346064/fceeecba-fc64-11e6-9498-52038c853ddb.gif)
 
 ## Install
 
