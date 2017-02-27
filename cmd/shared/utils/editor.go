@@ -92,6 +92,10 @@ func (e *Editor) Open() error {
 	defer f.Close()
 
 	body, err := ioutil.ReadAll(f)
+	if err != nil {
+		e.open = false
+		return err
+	}
 	e.text = string(body)
 
 	e.open = false

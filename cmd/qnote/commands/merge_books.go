@@ -60,6 +60,7 @@ func mergeBooksCmdRun(cmd *cobra.Command, args []string) {
 		exitOnError(err)
 
 		err = idxConn.DeleteBook(book1)
+		exitOnError(err)
 
 		notes, err := dbConn.GetAllBookNotes(book2, sortBy, displayOrder)
 		exitOnError(err)
