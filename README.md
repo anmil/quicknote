@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/anmil/quicknote.svg?branch=master)](https://travis-ci.org/anmil/quicknote)
+
 ## What is QuickNote?
 
 Qnote allows you to quickly create and search tens of thousands of short notes.
