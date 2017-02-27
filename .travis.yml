@@ -9,6 +9,10 @@ os:
   - linux
   - osx
 
+branches:
+  only:
+  - master
+
 matrix:
   fast_finish: true
 
