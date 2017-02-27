@@ -60,10 +60,10 @@ var RootCmd = &cobra.Command{
 	Short:             "",
 	PersistentPreRun:  PreseistentPreRunRoot,
 	PersistentPostRun: PreseistentPostRunRoot,
-	Run:               RootCmdRun,
+	Run:               rootCmdRun,
 }
 
-func RootCmdRun(cmd *cobra.Command, args []string) {
+func rootCmdRun(cmd *cobra.Command, args []string) {
 	g, err := gocui.NewGui(gocui.Output256)
 
 	if err != nil {

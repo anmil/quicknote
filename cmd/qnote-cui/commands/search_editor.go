@@ -19,11 +19,13 @@ package commands
 
 import "github.com/jroimartin/gocui"
 
+// LiveSearchEditor searches for notes as the user types
 type LiveSearchEditor struct {
 	Gui           *gocui.Gui
 	InputCallback func(g *gocui.Gui, v *gocui.View) error
 }
 
+// Edit callback for edit events
 func (ve *LiveSearchEditor) Edit(v *gocui.View, key gocui.Key, ch rune, mod gocui.Modifier) {
 	switch {
 	case ch != 0 && mod == 0:

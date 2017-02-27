@@ -92,7 +92,7 @@ func searchBoxViewEvent(g *gocui.Gui, v *gocui.View) error {
 		}
 	}
 
-	idLen := len(fmt.Sprint("%d", highestID))
+	idLen := len(fmt.Sprintf("%d", highestID))
 
 	rV.Clear()
 	curSearchResultsNotes = make([]*note.Note, 0, len(ids))

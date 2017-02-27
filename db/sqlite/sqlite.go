@@ -22,6 +22,7 @@ import (
 	"errors"
 	"reflect"
 
+	// go-sqlite3 must be imported for initialization
 	_ "github.com/mattn/go-sqlite3"
 )
 
