@@ -99,6 +99,8 @@ func GetDBConn() (db.DB, error) {
 	switch viper.GetString("db_provider") {
 	case "sqlite":
 		return getSqliteDBConn()
+	case "postgres":
+		return getPostgresDBConn()
 	default:
 		return nil, errors.New("Unsupported database provider")
 	}
@@ -107,6 +109,21 @@ func GetDBConn() (db.DB, error) {
 func getSqliteDBConn() (db.DB, error) {
 	fp := path.Join(DataDirectory, "notes.db")
 	d, err := db.NewDatabase("sqlite", fp)
+	if err != nil {
+		return nil, err
+	}
+	return d, err
+}
+
+func getPostgresDBConn() (db.DB, error) {
+	name := viper.GetString("postgres.name")
+	host := viper.GetString("postgres.host")
+	port := viper.GetString("postgres.port")
+	user := viper.GetString("postgres.user")
+	pass := viper.GetString("postgres.pass")
+	sslmode := viper.GetString("postgres.sslmode")
+
+	d, err := db.NewDatabase("postgres", name, host, port, user, pass, sslmode)
 	if err != nil {
 		return nil, err
 	}
@@ -180,6 +197,16 @@ raw_query: false
 # Options: sqlite
 # TODO: Will be adding support for Postgres in the future
 db_provider: sqlite
+# db_provider: postgres
+
+# PostgreSQl settings
+# postgres:
+#   name: qnote
+#   user: qnote
+#   pass: *****
+#   host: localhost
+#   port: 5432
+#   sslmode: disable
 
 # This options are not required for sqlite
 # db_host: 127.0.0.1

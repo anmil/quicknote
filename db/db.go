@@ -20,6 +20,7 @@ package db
 import (
 	"errors"
 
+	"github.com/anmil/quicknote/db/postgres"
 	"github.com/anmil/quicknote/db/sqlite"
 	"github.com/anmil/quicknote/note"
 )
@@ -62,6 +63,8 @@ func NewDatabase(provider string, options ...string) (DB, error) {
 	switch provider {
 	case "sqlite":
 		return sqlite.NewDatabase(options...)
+	case "postgres":
+		return postgres.NewDatabase(options...)
 	default:
 		return nil, ErrProviderNotSupported
 	}
