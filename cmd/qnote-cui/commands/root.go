@@ -23,11 +23,11 @@ import (
 	"log"
 	"os"
 
+	"github.com/anmil/quicknote/cmd/qnote-cui/cui"
 	"github.com/anmil/quicknote/cmd/shared/config"
 	"github.com/anmil/quicknote/db"
 	"github.com/anmil/quicknote/index"
 	"github.com/anmil/quicknote/note"
-	"github.com/jroimartin/gocui"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -64,23 +64,14 @@ var RootCmd = &cobra.Command{
 }
 
 func rootCmdRun(cmd *cobra.Command, args []string) {
-	g, err := gocui.NewGui(gocui.Output256)
+	c, err := cui.NewCUI(workingNotebook, dbConn, idxConn)
+	exitOnError(err)
+	defer c.Close()
 
-	if err != nil {
-		log.Panicln(err)
-	}
-	defer g.Close()
+	cui.SetKeybindings(c.GoCUI)
 
-	g.Cursor = true
-	g.InputEsc = true
-
-	g.SetManagerFunc(mainLayout)
-
-	setKeybindings(g)
-
-	if err := g.MainLoop(); err != nil && err != gocui.ErrQuit {
-		log.Panicln(err)
-	}
+	err = c.Run()
+	exitOnError(err)
 }
 
 // PreseistentPreRunRoot runs before the Root Command and any child
@@ -119,30 +110,3 @@ func exitValidationError(msg string, cmd *cobra.Command) {
 	cmd.Usage()
 	os.Exit(1)
 }
-
-func setKeybindings(g *gocui.Gui) {
-	if err := g.SetKeybinding("", gocui.KeyCtrlC, gocui.ModNone, quitCB); err != nil {
-		log.Panicln(err)
-	}
-	if err := g.SetKeybinding("search_box", gocui.KeyEsc, gocui.ModNone, quitCB); err != nil {
-		log.Panicln(err)
-	}
-	if err := g.SetKeybinding("search_box", gocui.KeyEnter, gocui.ModNone, displayNote); err != nil {
-		log.Panicln(err)
-	}
-	if err := g.SetKeybinding("search_box", gocui.KeyArrowUp, gocui.ModNone, searchBoxKeyUpEvent); err != nil {
-		log.Panicln(err)
-	}
-	if err := g.SetKeybinding("search_box", gocui.KeyArrowDown, gocui.ModNone, searchBoxKeyDownEvent); err != nil {
-		log.Panicln(err)
-	}
-	if err := g.SetKeybinding("note_display", gocui.KeyEsc, gocui.ModNone, delDisplayNote); err != nil {
-		log.Panicln(err)
-	}
-}
-
-func quitCB(g *gocui.Gui, v *gocui.View) error {
-	return gocui.ErrQuit
-}
-
-var defaultConfigFileText = ``
