@@ -21,7 +21,9 @@ import (
 	"encoding/csv"
 	"encoding/json"
 	"fmt"
+	"math"
 	"os"
+	"sort"
 	"strconv"
 	"strings"
 
@@ -205,4 +207,115 @@ func PrintNotesJSON(notes []*note.Note) error {
 	}
 	fmt.Println(string(b))
 	return nil
+}
+
+// MaxWordLen is the maximum length of any word in the grid
+// Words longer than this are truncated.
+var MaxWordLen = 32
+
+// longestColumnWordString simple loop to find the longest word in the slice
+func longestColumnWordString(ws []string) int {
+	lw := 0
+	for _, w := range ws {
+		if len(w) > lw {
+			l := len(w)
+			if l > MaxWordLen {
+				l = 32
+			}
+			lw = l
+		}
+	}
+	return lw
+}
+
+// buildGridString builds the grid from the slice of words. The grid
+// is sorted from top down than left to right. The number of columns
+// is calculated using the len of the slice and number of rows given
+func buildGridString(words []string, rCnt int) (string, int) {
+
+	// Calculate the number of columns needed to
+	// get have the corrected row count
+	d := float64(len(words)) / float64(rCnt)
+	cCnt := int(math.Ceil(d))
+
+	// Using the rCnt and cCnt, we build the
+	// two dimensional table to represent the grid
+	table := make([][]string, 0)
+	for c := 0; c < cCnt; c++ {
+		col := make([]string, 0)
+		sIdx := c * rCnt
+		if sIdx < len(words) {
+			eIdx := sIdx + rCnt
+			for r := sIdx; r < eIdx; r++ {
+				if r >= len(words) {
+					break
+				}
+				col = append(col, words[r])
+			}
+			table = append(table, col)
+		}
+	}
+
+	// To keep all of the column aligned, we find the
+	// longest word in each column to use as our padding
+	// value
+	paddingColMap := make(map[int]int)
+	for idx, col := range table {
+		paddingColMap[idx] = longestColumnWordString(col)
+	}
+
+	// Now we make the grid by printing horizontally across
+	// the table. If the word is smaller than the longest
+	// word in the column (using paddingColMap). Than we
+	// pad the word with spaces till its of equal length.
+	// This ensures that all of the columns are aligned.
+	// We also keep track of the longest rows (in character len)
+	// and return it and the string containing the grid.
+	mRlen := 0
+	var msg string
+	for r := 0; r < rCnt; r++ {
+		line := ""
+		for c := 0; c < len(table); c++ {
+			if r >= len(table[c]) {
+				break
+			}
+			lw := paddingColMap[c]
+			w := table[c][r]
+			if len(w) > MaxWordLen {
+				w = string(w[:MaxWordLen])
+			}
+			pw := fmt.Sprintf("%s%s ", w, strings.Repeat(" ", lw-len(w)))
+			line = fmt.Sprintf("%s%s", line, pw)
+		}
+		if len(line) > mRlen {
+			mRlen = len(line)
+		}
+		msg = fmt.Sprintf("%s%s\n", msg, line)
+	}
+
+	return msg, mRlen
+}
+
+// see BuildGridString for details
+func buildGridStringRec(strs []string, start, end, maxLen int, m string) string {
+	if end-start <= 1 {
+		return m
+	}
+
+	p := ((end - start) / 2) + start
+	msg, mRlen := buildGridString(strs, p)
+
+	if mRlen < maxLen {
+		return buildGridStringRec(strs, start, p, maxLen, msg)
+	}
+	return buildGridStringRec(strs, p, end, maxLen, m)
+}
+
+// BuildGridString calls a binary search style recursive function that finds
+// the minimum number of rows without passing the maximum column width.
+// Generally, maxLen will be equal to the width of the terminal (or view if using
+// a CUI).
+func BuildGridString(strs []string, maxLen int) string {
+	sort.Strings(strs)
+	return buildGridStringRec(strs, 0, len(strs), maxLen, "")
 }
