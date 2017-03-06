@@ -44,7 +44,7 @@ func colorFG(s string, fg int) string {
 		return s
 	}
 
-	return fmt.Sprintf("\x1b[38;5;%dm%s\x1b[0m ", fg, s)
+	return fmt.Sprintf("\x1b[38;5;%dm%s\x1b[0m", fg, s)
 }
 
 func colorBG(s string, bg int) string {
@@ -52,7 +52,7 @@ func colorBG(s string, bg int) string {
 		return s
 	}
 
-	return fmt.Sprintf("\x1b[48;5;%dm\x1b[30m%s\x1b[0m ", bg, s)
+	return fmt.Sprintf("\x1b[48;5;%dm\x1b[30m%s\x1b[0m", bg, s)
 }
 
 func colorFBG(s string, fg int, bg int) string {

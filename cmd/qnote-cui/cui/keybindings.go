@@ -17,26 +17,18 @@
 
 package cui
 
-import "github.com/jroimartin/gocui"
+import (
+	"github.com/jroimartin/gocui"
+)
 
-func SetKeybindings(g *gocui.Gui) error {
-	if err := g.SetKeybinding("", gocui.KeyCtrlC, gocui.ModNone, quitCB); err != nil {
-		return err
-	}
-	if err := g.SetKeybinding("search_box", gocui.KeyEsc, gocui.ModNone, quitCB); err != nil {
-		return err
-	}
-	if err := g.SetKeybinding("search_box", gocui.KeyEnter, gocui.ModNone, displayNote); err != nil {
-		return err
-	}
-	if err := g.SetKeybinding("search_box", gocui.KeyArrowUp, gocui.ModNone, searchBoxKeyUpEvent); err != nil {
-		return err
-	}
-	if err := g.SetKeybinding("search_box", gocui.KeyArrowDown, gocui.ModNone, searchBoxKeyDownEvent); err != nil {
-		return err
-	}
-	if err := g.SetKeybinding("note_display", gocui.KeyEsc, gocui.ModNone, delDisplayNote); err != nil {
-		return err
-	}
-	return nil
+func (c *CUI) setKeybindings() {
+	// Global key bindings
+	must(c.GoCUI.SetKeybinding("", gocui.KeyCtrlC, gocui.ModNone, c.quitCB))
+
+	// Note list view key bindings
+	must(c.GoCUI.SetKeybinding(NoteListVN, gocui.KeyEsc, gocui.ModNone, c.quitCB))
+	must(c.GoCUI.SetKeybinding(NoteListVN, gocui.KeyArrowUp, gocui.ModNone, c.NoteListView.MoveSelectionUp))
+	must(c.GoCUI.SetKeybinding(NoteListVN, gocui.KeyArrowDown, gocui.ModNone, c.NoteListView.MoveSelectionDown))
+	must(c.GoCUI.SetKeybinding(NoteListVN, gocui.KeyPgup, gocui.ModNone, c.NoteListView.PageUp))
+	must(c.GoCUI.SetKeybinding(NoteListVN, gocui.KeyPgdn, gocui.ModNone, c.NoteListView.PageDown))
 }

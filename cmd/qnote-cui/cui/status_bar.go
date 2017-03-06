@@ -26,7 +26,7 @@ import (
 
 var StatusBarVN = "statusbar"
 
-type StatusBar struct {
+type StatusBarV struct {
 	c *CUI
 	v *gocui.View
 
@@ -42,7 +42,7 @@ type StatusBar struct {
 	msg string
 }
 
-func NewStatusBar(c *CUI, x0, y0, x1, y1 int) (*StatusBar, error) {
+func NewStatusBarV(c *CUI, x0, y0, x1, y1 int) (*StatusBarV, error) {
 	v, err := c.GoCUI.SetView(StatusBarVN, x0, y0, x1, y1)
 	if err != nil && err != gocui.ErrUnknownView {
 		return nil, err
@@ -52,7 +52,7 @@ func NewStatusBar(c *CUI, x0, y0, x1, y1 int) (*StatusBar, error) {
 	v.Wrap = false
 	v.Frame = false
 
-	s := &StatusBar{c: c, v: v}
+	s := &StatusBarV{c: c, v: v}
 	s.x0 = x0
 	s.y0 = y0
 	s.x1 = x1
@@ -61,17 +61,17 @@ func NewStatusBar(c *CUI, x0, y0, x1, y1 int) (*StatusBar, error) {
 	return s, nil
 }
 
-func (s *StatusBar) SetMessage(msg string) error {
+func (s *StatusBarV) SetMessage(msg string) error {
 	s.msg = msg
 	return s.Render()
 }
 
-func (s *StatusBar) SetWorkingBookName(bkName string) error {
+func (s *StatusBarV) SetWorkingBookName(bkName string) error {
 	s.bkName = bkName
 	return s.Render()
 }
 
-func (s *StatusBar) Resize(x0, y0, x1, y1 int) error {
+func (s *StatusBarV) Resize(x0, y0, x1, y1 int) error {
 	s.x0 = x0
 	s.y0 = y0
 	s.x1 = x1
@@ -79,7 +79,7 @@ func (s *StatusBar) Resize(x0, y0, x1, y1 int) error {
 	return s.Render()
 }
 
-func (s *StatusBar) Render() error {
+func (s *StatusBarV) Render() error {
 	_, err := s.c.GoCUI.SetView(StatusBarVN, s.x0, s.y0, s.x1, s.y1)
 	if err != nil {
 		return err

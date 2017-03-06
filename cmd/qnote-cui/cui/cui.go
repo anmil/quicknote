@@ -31,7 +31,8 @@ type CUI struct {
 	DBCoon  db.DB
 	IdxConn index.Index
 
-	sb *StatusBar
+	StatusBarView *StatusBarV
+	NoteListView  *NoteListV
 }
 
 func NewCUI(wBook *note.Book, dbCoon db.DB, idxConn index.Index) (*CUI, error) {
@@ -45,7 +46,7 @@ func NewCUI(wBook *note.Book, dbCoon db.DB, idxConn index.Index) (*CUI, error) {
 	g.SetManager(c)
 
 	maxX, maxY := g.Size()
-	sb, err := NewStatusBar(c, -1, maxY-2, maxX, maxY)
+	sb, err := NewStatusBarV(c, -1, maxY-2, maxX, maxY)
 	if err != nil {
 		return nil, err
 	}
@@ -55,14 +56,34 @@ func NewCUI(wBook *note.Book, dbCoon db.DB, idxConn index.Index) (*CUI, error) {
 	if err = sb.SetMessage("This is a test This is a test"); err != nil {
 		return nil, err
 	}
-	c.sb = sb
+	c.StatusBarView = sb
+
+	nl, err := NewNoteListV(c, -1, -1, maxX, maxY-1)
+	if err != nil {
+		return nil, err
+	}
+	notes, err := dbCoon.GetAllBookNotes(wBook, "modified", "asc")
+	if err != nil {
+		return nil, err
+	}
+	if err = nl.SetNotes(notes); err != nil {
+		return nil, err
+	}
+	c.NoteListView = nl
+
+	c.setKeybindings()
+
+	if _, err = g.SetCurrentView(NoteListVN); err != nil {
+		return nil, err
+	}
 
 	return c, nil
 }
 
 func (c *CUI) Layout(g *gocui.Gui) error {
 	maxX, maxY := g.Size()
-	c.sb.Resize(-1, maxY-2, maxX, maxY)
+	c.StatusBarView.Resize(-1, maxY-2, maxX, maxY)
+	c.NoteListView.Resize(-1, -1, maxX, maxY-1)
 	return nil
 }
 
@@ -83,4 +104,14 @@ func (c *CUI) Run() error {
 
 func (c *CUI) Close() {
 	c.GoCUI.Close()
+}
+
+func (c *CUI) quitCB(g *gocui.Gui, v *gocui.View) error {
+	return gocui.ErrQuit
+}
+
+func must(err error) {
+	if err != nil {
+		panic(err)
+	}
 }

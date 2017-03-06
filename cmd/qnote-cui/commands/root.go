@@ -68,8 +68,6 @@ func rootCmdRun(cmd *cobra.Command, args []string) {
 	exitOnError(err)
 	defer c.Close()
 
-	cui.SetKeybindings(c.GoCUI)
-
 	err = c.Run()
 	exitOnError(err)
 }
