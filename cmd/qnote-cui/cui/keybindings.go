@@ -31,4 +31,13 @@ func (c *CUI) setKeybindings() {
 	must(c.GoCUI.SetKeybinding(NoteListVN, gocui.KeyArrowDown, gocui.ModNone, c.moveNVSelDnCB))
 	must(c.GoCUI.SetKeybinding(NoteListVN, gocui.KeyPgup, gocui.ModNone, c.moveNVSelPUpCB))
 	must(c.GoCUI.SetKeybinding(NoteListVN, gocui.KeyPgdn, gocui.ModNone, c.moveNVSelPDnCB))
+	must(c.GoCUI.SetKeybinding(NoteListVN, gocui.KeyCtrlB, gocui.ModNone, c.changeBookCB))
+
+	// Book Selector view key bindings
+	must(c.GoCUI.SetKeybinding(BookSelectorVN, gocui.KeyEsc, gocui.ModNone, c.closeChangeBookCB))
+	must(c.GoCUI.SetKeybinding(BookSelectorVN, gocui.KeyArrowUp, gocui.ModNone, c.moveBSSelUpCB))
+	must(c.GoCUI.SetKeybinding(BookSelectorVN, gocui.KeyArrowDown, gocui.ModNone, c.moveBSSelDnCB))
+	must(c.GoCUI.SetKeybinding(BookSelectorVN, gocui.KeyArrowLeft, gocui.ModNone, c.moveBSSelLfCB))
+	must(c.GoCUI.SetKeybinding(BookSelectorVN, gocui.KeyArrowRight, gocui.ModNone, c.moveBSSelRtCB))
+	must(c.GoCUI.SetKeybinding(BookSelectorVN, gocui.KeyEnter, gocui.ModNone, c.selBSCB))
 }

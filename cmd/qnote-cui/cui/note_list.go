@@ -31,13 +31,7 @@ var NoteListVN = "note_list"
 // NoteListV displays a list of notes allowing
 // the user to scroll and page.
 type NoteListV struct {
-	c *CUI
-	v *gocui.View
-
-	x0 int
-	y0 int
-	x1 int
-	y1 int
+	View
 
 	// Working Book name
 	notes     []*note.Note
@@ -60,14 +54,16 @@ func NewNoteListV(c *CUI, x0, y0, x1, y1 int) (*NoteListV, error) {
 	v.Wrap = false
 	v.Frame = false
 
-	// v.Highlight = true
-	// v.SelBgColor = gocui.ColorGreen
-
-	n := &NoteListV{c: c, v: v}
-	n.x0 = x0
-	n.y0 = y0
-	n.x1 = x1
-	n.y1 = y1
+	n := &NoteListV{
+		View: View{
+			c:  c,
+			v:  v,
+			x0: x0,
+			y0: y0,
+			x1: x1,
+			y1: y1,
+		},
+	}
 
 	return n, nil
 }
@@ -188,7 +184,7 @@ func (n *NoteListV) Resize(x0, y0, x1, y1 int) error {
 // Render creates the list of Notes and renders them to the view. Highlighting
 // the selected Note.
 func (n *NoteListV) Render() error {
-	_, err := n.c.GoCUI.SetView(NoteListVN, n.x0, n.y0, n.x1, n.y1)
+	_, err := n.c.GoCUI.SetView(n.Name(), n.x0, n.y0, n.x1, n.y1)
 	if err != nil {
 		return err
 	}

@@ -24,25 +24,45 @@ import (
 	"github.com/jroimartin/gocui"
 )
 
+type Viewer interface {
+	Name() string
+	Render() error
+}
+
+type View struct {
+	c *CUI
+	v *gocui.View
+
+	x0 int
+	y0 int
+	x1 int
+	y1 int
+}
+
+func (v *View) Name() string {
+	return v.v.Name()
+}
+
 type CUI struct {
 	GoCUI *gocui.Gui
 
 	WBook   *note.Book
-	DBCoon  db.DB
+	DBConn  db.DB
 	IdxConn index.Index
 
 	StatusBarView *StatusBarV
 	NoteListView  *NoteListV
+	BookSelector  *BookSelectorV
 }
 
-func NewCUI(wBook *note.Book, dbCoon db.DB, idxConn index.Index) (*CUI, error) {
+func NewCUI(wBook *note.Book, dbConn db.DB, idxConn index.Index) (*CUI, error) {
 	g, err := gocui.NewGui(gocui.Output256)
 	if err != nil {
 		return nil, err
 	}
 	g.InputEsc = true
 
-	c := &CUI{GoCUI: g, WBook: wBook, DBCoon: dbConn, IdxConn: idxConn}
+	c := &CUI{GoCUI: g, WBook: wBook, DBConn: dbConn, IdxConn: idxConn}
 	g.SetManager(c)
 
 	maxX, maxY := g.Size()
@@ -53,16 +73,13 @@ func NewCUI(wBook *note.Book, dbCoon db.DB, idxConn index.Index) (*CUI, error) {
 	if err = sb.SetWorkingBookName(c.WBook.Name); err != nil {
 		return nil, err
 	}
-	if err = sb.SetMessage("This is a test This is a test"); err != nil {
-		return nil, err
-	}
 	c.StatusBarView = sb
 
 	nl, err := NewNoteListV(c, -1, -1, maxX, maxY-1)
 	if err != nil {
 		return nil, err
 	}
-	notes, err := dbCoon.GetAllBookNotes(wBook, "modified", "asc")
+	notes, err := dbConn.GetAllBookNotes(wBook, "modified", "asc")
 	if err != nil {
 		return nil, err
 	}
@@ -73,7 +90,7 @@ func NewCUI(wBook *note.Book, dbCoon db.DB, idxConn index.Index) (*CUI, error) {
 
 	c.setKeybindings()
 
-	if _, err = g.SetCurrentView(NoteListVN); err != nil {
+	if err = c.SetCurrentView(c.NoteListView); err != nil {
 		return nil, err
 	}
 
@@ -82,8 +99,23 @@ func NewCUI(wBook *note.Book, dbCoon db.DB, idxConn index.Index) (*CUI, error) {
 
 func (c *CUI) Layout(g *gocui.Gui) error {
 	maxX, maxY := g.Size()
-	c.StatusBarView.Resize(-1, maxY-2, maxX, maxY)
-	c.NoteListView.Resize(-1, -1, maxX, maxY-1)
+	err := c.StatusBarView.Resize(-1, maxY-2, maxX, maxY)
+	if err != nil {
+		return err
+	}
+
+	err = c.NoteListView.Resize(-1, -1, maxX, maxY-1)
+	if err != nil {
+		return err
+	}
+
+	if c.BookSelector != nil {
+		err = c.BookSelector.Resize(5, 5, maxX-5, maxY-5)
+		if err != nil {
+			return err
+		}
+	}
+
 	return nil
 }
 
@@ -95,6 +127,11 @@ func (c *CUI) InputEsc(b bool) {
 	c.GoCUI.InputEsc = b
 }
 
+func (c *CUI) SetCurrentView(v Viewer) error {
+	_, err := c.GoCUI.SetCurrentView(v.Name())
+	return err
+}
+
 func (c *CUI) Run() error {
 	if err := c.GoCUI.MainLoop(); err != nil && err != gocui.ErrQuit {
 		return err
@@ -104,26 +141,6 @@ func (c *CUI) Run() error {
 
 func (c *CUI) Close() {
 	c.GoCUI.Close()
-}
-
-func (c *CUI) moveNVSelUpCB(g *gocui.Gui, v *gocui.View) error {
-	return c.NoteListView.MoveSelectionUp()
-}
-
-func (c *CUI) moveNVSelDnCB(g *gocui.Gui, v *gocui.View) error {
-	return c.NoteListView.MoveSelectionDown()
-}
-
-func (c *CUI) moveNVSelPUpCB(g *gocui.Gui, v *gocui.View) error {
-	return c.NoteListView.PageSelectionUp()
-}
-
-func (c *CUI) moveNVSelPDnCB(g *gocui.Gui, v *gocui.View) error {
-	return c.NoteListView.PageSelectionDown()
-}
-
-func (c *CUI) quitCB(g *gocui.Gui, v *gocui.View) error {
-	return gocui.ErrQuit
 }
 
 func must(err error) {

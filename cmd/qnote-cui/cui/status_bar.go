@@ -27,13 +27,7 @@ import (
 var StatusBarVN = "statusbar"
 
 type StatusBarV struct {
-	c *CUI
-	v *gocui.View
-
-	x0 int
-	y0 int
-	x1 int
-	y1 int
+	View
 
 	// Working Book name
 	bkName string
@@ -52,11 +46,16 @@ func NewStatusBarV(c *CUI, x0, y0, x1, y1 int) (*StatusBarV, error) {
 	v.Wrap = false
 	v.Frame = false
 
-	s := &StatusBarV{c: c, v: v}
-	s.x0 = x0
-	s.y0 = y0
-	s.x1 = x1
-	s.y1 = y1
+	s := &StatusBarV{
+		View: View{
+			c:  c,
+			v:  v,
+			x0: x0,
+			y0: y0,
+			x1: x1,
+			y1: y1,
+		},
+	}
 
 	return s, nil
 }
@@ -80,7 +79,7 @@ func (s *StatusBarV) Resize(x0, y0, x1, y1 int) error {
 }
 
 func (s *StatusBarV) Render() error {
-	_, err := s.c.GoCUI.SetView(StatusBarVN, s.x0, s.y0, s.x1, s.y1)
+	_, err := s.c.GoCUI.SetView(s.Name(), s.x0, s.y0, s.x1, s.y1)
 	if err != nil {
 		return err
 	}
