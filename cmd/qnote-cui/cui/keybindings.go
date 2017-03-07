@@ -27,8 +27,8 @@ func (c *CUI) setKeybindings() {
 
 	// Note list view key bindings
 	must(c.GoCUI.SetKeybinding(NoteListVN, gocui.KeyEsc, gocui.ModNone, c.quitCB))
-	must(c.GoCUI.SetKeybinding(NoteListVN, gocui.KeyArrowUp, gocui.ModNone, c.NoteListView.MoveSelectionUp))
-	must(c.GoCUI.SetKeybinding(NoteListVN, gocui.KeyArrowDown, gocui.ModNone, c.NoteListView.MoveSelectionDown))
-	must(c.GoCUI.SetKeybinding(NoteListVN, gocui.KeyPgup, gocui.ModNone, c.NoteListView.PageUp))
-	must(c.GoCUI.SetKeybinding(NoteListVN, gocui.KeyPgdn, gocui.ModNone, c.NoteListView.PageDown))
+	must(c.GoCUI.SetKeybinding(NoteListVN, gocui.KeyArrowUp, gocui.ModNone, c.moveNVSelUpCB))
+	must(c.GoCUI.SetKeybinding(NoteListVN, gocui.KeyArrowDown, gocui.ModNone, c.moveNVSelDnCB))
+	must(c.GoCUI.SetKeybinding(NoteListVN, gocui.KeyPgup, gocui.ModNone, c.moveNVSelPUpCB))
+	must(c.GoCUI.SetKeybinding(NoteListVN, gocui.KeyPgdn, gocui.ModNone, c.moveNVSelPDnCB))
 }

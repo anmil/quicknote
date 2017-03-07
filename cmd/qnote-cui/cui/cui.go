@@ -106,6 +106,22 @@ func (c *CUI) Close() {
 	c.GoCUI.Close()
 }
 
+func (c *CUI) moveNVSelUpCB(g *gocui.Gui, v *gocui.View) error {
+	return c.NoteListView.MoveSelectionUp()
+}
+
+func (c *CUI) moveNVSelDnCB(g *gocui.Gui, v *gocui.View) error {
+	return c.NoteListView.MoveSelectionDown()
+}
+
+func (c *CUI) moveNVSelPUpCB(g *gocui.Gui, v *gocui.View) error {
+	return c.NoteListView.PageSelectionUp()
+}
+
+func (c *CUI) moveNVSelPDnCB(g *gocui.Gui, v *gocui.View) error {
+	return c.NoteListView.PageSelectionDown()
+}
+
 func (c *CUI) quitCB(g *gocui.Gui, v *gocui.View) error {
 	return gocui.ErrQuit
 }

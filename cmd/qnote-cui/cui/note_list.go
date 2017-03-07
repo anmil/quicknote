@@ -19,15 +19,17 @@ package cui
 
 import (
 	"bytes"
-	"errors"
 	"fmt"
 
 	"github.com/anmil/quicknote/note"
 	"github.com/jroimartin/gocui"
 )
 
+// NoteListVN view name
 var NoteListVN = "note_list"
 
+// NoteListV displays a list of notes allowing
+// the user to scroll and page.
 type NoteListV struct {
 	c *CUI
 	v *gocui.View
@@ -47,6 +49,7 @@ type NoteListV struct {
 	msg string
 }
 
+// NewNoteListV returns a new Note List view
 func NewNoteListV(c *CUI, x0, y0, x1, y1 int) (*NoteListV, error) {
 	v, err := c.GoCUI.SetView(NoteListVN, x0, y0, x1, y1)
 	if err != nil && err != gocui.ErrUnknownView {
@@ -69,6 +72,7 @@ func NewNoteListV(c *CUI, x0, y0, x1, y1 int) (*NoteListV, error) {
 	return n, nil
 }
 
+// SetNotes sets the list of Notes to display and renders them
 func (n *NoteListV) SetNotes(ns []*note.Note) error {
 	n.selIdx = 0
 	n.notes = ns
@@ -82,39 +86,48 @@ func (n *NoteListV) SetNotes(ns []*note.Note) error {
 	return n.Render()
 }
 
-func (n *NoteListV) MoveSelectionUp(g *gocui.Gui, v *gocui.View) error {
-	return n.MoveSelection(n.selIdx - 1)
+// MoveSelectionUp moves selection up by one
+func (n *NoteListV) MoveSelectionUp() error {
+	return n.SetSelection(n.selIdx - 1)
 }
 
-func (n *NoteListV) MoveSelectionDown(g *gocui.Gui, v *gocui.View) error {
-	return n.MoveSelection(n.selIdx + 1)
+// MoveSelectionDown moves selection down by one
+func (n *NoteListV) MoveSelectionDown() error {
+	return n.SetSelection(n.selIdx + 1)
 }
 
-func (n *NoteListV) HalfPageUp(g *gocui.Gui, v *gocui.View) error {
+// HalfPageUp moves selection halfway the view's hight up
+func (n *NoteListV) HalfPageUp() error {
 	_, sy := n.v.Size()
-	return n.MoveSelection(n.selIdx - (sy / 2))
+	return n.SetSelection(n.selIdx - (sy / 2))
 }
 
-func (n *NoteListV) HalfPageDown(g *gocui.Gui, v *gocui.View) error {
+// HalfPageDown moves selection halfway the view's hight down
+func (n *NoteListV) HalfPageDown() error {
 	_, sy := n.v.Size()
-	return n.MoveSelection(n.selIdx + (sy / 2))
+	return n.SetSelection(n.selIdx + (sy / 2))
 }
 
-func (n *NoteListV) PageUp(g *gocui.Gui, v *gocui.View) error {
+// PageSelectionUp moves selection the length of the view's hight up
+func (n *NoteListV) PageSelectionUp() error {
 	_, sy := n.v.Size()
-	return n.MoveSelection(n.selIdx - sy)
+	return n.SetSelection(n.selIdx - sy)
 }
 
-func (n *NoteListV) PageDown(g *gocui.Gui, v *gocui.View) error {
+// PageSelectionDown moves selection the length of the view's hight down
+func (n *NoteListV) PageSelectionDown() error {
 	_, sy := n.v.Size()
-	return n.MoveSelection(n.selIdx + sy)
+	return n.SetSelection(n.selIdx + sy)
 }
 
-func (n *NoteListV) MoveSelection(idx int) error {
+// SetSelection moves selection to the given index
+func (n *NoteListV) SetSelection(idx int) error {
 	_, sy := n.v.Size()
 	cx, cy := n.v.Cursor()
 	ox, oy := n.v.Origin()
 
+	// If we get a index that is outside the bounds of the list
+	// we just set it to the end or beginning of the list
 	if idx >= len(n.notes) {
 		idx = len(n.notes) - 1
 	}
@@ -122,6 +135,8 @@ func (n *NoteListV) MoveSelection(idx int) error {
 		idx = 0
 	}
 
+	// Calculate the new cursor and origin position using the
+	// old and new index.
 	if idx-n.selIdx == 0 || idx < 0 {
 		return nil
 	} else if idx-n.selIdx >= 1 {
@@ -142,11 +157,12 @@ func (n *NoteListV) MoveSelection(idx int) error {
 		}
 	}
 
-	n.c.StatusBarView.SetMessage(fmt.Sprintf("nid: %d cy: %d sy: %d oy: %d idx: %d cidx: %d d: %d",
-		n.notes[idx].ID, cy, sy, oy, idx, n.selIdx, idx-n.selIdx))
-
+	// Once we finish the calculations
+	// we can override the old one
 	n.selIdx = idx
 
+	// Set the origin first so the cursor is in the visitable view
+	// otherwise we will get an error if it is not.
 	if err := n.v.SetOrigin(ox, oy); err != nil {
 		return err
 	}
@@ -154,9 +170,13 @@ func (n *NoteListV) MoveSelection(idx int) error {
 		return err
 	}
 
+	// I would love to not have to re-render the entire view, but
+	// I have not found a way to insert text at the cursor without
+	// losing color
 	return n.Render()
 }
 
+// Resize sets the a new size to render the view
 func (n *NoteListV) Resize(x0, y0, x1, y1 int) error {
 	n.x0 = x0
 	n.y0 = y0
@@ -165,14 +185,15 @@ func (n *NoteListV) Resize(x0, y0, x1, y1 int) error {
 	return n.Render()
 }
 
+// Render creates the list of Notes and renders them to the view. Highlighting
+// the selected Note.
 func (n *NoteListV) Render() error {
 	_, err := n.c.GoCUI.SetView(NoteListVN, n.x0, n.y0, n.x1, n.y1)
 	if err != nil {
-		return errors.New("Failed to resize")
+		return err
 	}
 
 	var buff bytes.Buffer
-
 	idLen := len(fmt.Sprintf("%d", n.highestID))
 
 	for idx, note := range n.notes {
