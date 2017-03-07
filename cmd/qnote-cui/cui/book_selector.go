@@ -89,9 +89,7 @@ func (b *BookSelectorV) getCurSelIdex() (int, int) {
 
 func (b *BookSelectorV) MoveSelectionUp() error {
 	cx, cy := b.getCurSelIdex()
-	b.c.StatusBarView.SetMessage(fmt.Sprintf("Up cx: %d cy: %d", cx, cy))
 	if cy > 0 {
-		b.c.StatusBarView.SetMessage(fmt.Sprintf("Up cx: %d cy: %d ncx: %d ncy: %d", cx, cy, cx, cy-1))
 		b.selBook = b.getBookByName(b.bkTable[cx][cy-1])
 	}
 	return b.Render()
@@ -99,9 +97,7 @@ func (b *BookSelectorV) MoveSelectionUp() error {
 
 func (b *BookSelectorV) MoveSelectionDown() error {
 	cx, cy := b.getCurSelIdex()
-	b.c.StatusBarView.SetMessage(fmt.Sprintf("Dn cx: %d cy: %d", cx, cy))
 	if cy < len(b.bkTable[cx])-1 {
-		b.c.StatusBarView.SetMessage(fmt.Sprintf("Dn cx: %d cy: %d ncx: %d ncy: %d", cx, cy, cx, cy+1))
 		b.selBook = b.getBookByName(b.bkTable[cx][cy+1])
 	}
 	return b.Render()
@@ -109,7 +105,6 @@ func (b *BookSelectorV) MoveSelectionDown() error {
 
 func (b *BookSelectorV) MoveSelectionLeft() error {
 	cx, cy := b.getCurSelIdex()
-	b.c.StatusBarView.SetMessage(fmt.Sprintf("Lf cx: %d cy: %d", cx, cy))
 	if cx > 0 {
 		b.selBook = b.getBookByName(b.bkTable[cx-1][cy])
 	}
@@ -118,7 +113,6 @@ func (b *BookSelectorV) MoveSelectionLeft() error {
 
 func (b *BookSelectorV) MoveSelectionRight() error {
 	cx, cy := b.getCurSelIdex()
-	b.c.StatusBarView.SetMessage(fmt.Sprintf("Lf cx: %d cy: %d", cx, cy))
 	if cx < len(b.bkTable)-1 && cy < len(b.bkTable[cx+1]) {
 		b.selBook = b.getBookByName(b.bkTable[cx+1][cy])
 	}

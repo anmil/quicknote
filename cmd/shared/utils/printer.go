@@ -290,9 +290,9 @@ func buildGridString(words []string, rCnt int, cb func(string) string) ([][]stri
 }
 
 // see BuildGridString for details
-func buildGridStringRec(strs []string, start, end, maxLen int, m string, table [][]string, cb func(string) string) ([][]string, string) {
+func buildGridStringRec(strs []string, start, end, maxLen int, m string, t [][]string, cb func(string) string) ([][]string, string) {
 	if end-start <= 1 {
-		return table, m
+		return t, m
 	}
 
 	p := ((end - start) / 2) + start
@@ -301,7 +301,7 @@ func buildGridStringRec(strs []string, start, end, maxLen int, m string, table [
 	if mRlen < maxLen {
 		return buildGridStringRec(strs, start, p, maxLen, msg, table, cb)
 	}
-	return buildGridStringRec(strs, p, end, maxLen, m, table, cb)
+	return buildGridStringRec(strs, p, end, maxLen, m, t, cb)
 }
 
 // BuildGridString calls a binary search style recursive function that finds
