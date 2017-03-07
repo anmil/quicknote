@@ -26,6 +26,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"unicode/utf8"
 
 	"github.com/anmil/quicknote/note"
 	"github.com/fatih/color"
@@ -209,19 +210,13 @@ func PrintNotesJSON(notes []*note.Note) error {
 	return nil
 }
 
-// MaxWordLen is the maximum length of any word in the grid
-// Words longer than this are truncated.
-var MaxWordLen = 32
-
 // longestColumnWordString simple loop to find the longest word in the slice
 func longestColumnWordString(ws []string) int {
 	lw := 0
 	for _, w := range ws {
 		if len(w) > lw {
-			l := len(w)
-			if l > MaxWordLen {
-				l = 32
-			}
+			// l := len(fmt.Sprint(w))
+			l := utf8.RuneCountInString(w)
 			lw = l
 		}
 	}
@@ -231,7 +226,7 @@ func longestColumnWordString(ws []string) int {
 // buildGridString builds the grid from the slice of words. The grid
 // is sorted from top down than left to right. The number of columns
 // is calculated using the len of the slice and number of rows given
-func buildGridString(words []string, rCnt int) (string, int) {
+func buildGridString(words []string, rCnt int, cb func(string) string) ([][]string, string, int) {
 
 	// Calculate the number of columns needed to
 	// get have the corrected row count
@@ -280,11 +275,9 @@ func buildGridString(words []string, rCnt int) (string, int) {
 				break
 			}
 			lw := paddingColMap[c]
-			w := table[c][r]
-			if len(w) > MaxWordLen {
-				w = string(w[:MaxWordLen])
-			}
-			pw := fmt.Sprintf("%s%s ", w, strings.Repeat(" ", lw-len(w)))
+			w := cb(table[c][r])
+			wLen := len(table[c][r])
+			pw := fmt.Sprintf("%s%s ", w, strings.Repeat(" ", lw-wLen))
 			line = fmt.Sprintf("%s%s", line, pw)
 		}
 		if len(line) > mRlen {
@@ -293,29 +286,40 @@ func buildGridString(words []string, rCnt int) (string, int) {
 		msg = fmt.Sprintf("%s%s\n", msg, line)
 	}
 
-	return msg, mRlen
+	return table, msg, mRlen
 }
 
 // see BuildGridString for details
-func buildGridStringRec(strs []string, start, end, maxLen int, m string) string {
+func buildGridStringRec(strs []string, start, end, maxLen int, m string, table [][]string, cb func(string) string) ([][]string, string) {
 	if end-start <= 1 {
-		return m
+		return table, m
 	}
 
 	p := ((end - start) / 2) + start
-	msg, mRlen := buildGridString(strs, p)
+	table, msg, mRlen := buildGridString(strs, p, cb)
 
 	if mRlen < maxLen {
-		return buildGridStringRec(strs, start, p, maxLen, msg)
+		return buildGridStringRec(strs, start, p, maxLen, msg, table, cb)
 	}
-	return buildGridStringRec(strs, p, end, maxLen, m)
+	return buildGridStringRec(strs, p, end, maxLen, m, table, cb)
 }
 
 // BuildGridString calls a binary search style recursive function that finds
 // the minimum number of rows without passing the maximum column width.
 // Generally, maxLen will be equal to the width of the terminal (or view if using
 // a CUI).
-func BuildGridString(strs []string, maxLen int) string {
+func BuildGridString(strs []string, maxLen int) ([][]string, string) {
 	sort.Strings(strs)
-	return buildGridStringRec(strs, 0, len(strs), maxLen, "")
+	cb := func(w string) string {
+		return w
+	}
+	return buildGridStringRec(strs, 0, len(strs), maxLen, "", nil, cb)
+}
+
+// BuildGridStringCB like BuildGridString but accepts a call back function to alter
+// the word before adding it to the final grid. Useful to adding things like color
+// text that would normally message column lengths.
+func BuildGridStringCB(strs []string, maxLen int, cb func(string) string) ([][]string, string) {
+	sort.Strings(strs)
+	return buildGridStringRec(strs, 0, len(strs), maxLen, "", nil, cb)
 }
