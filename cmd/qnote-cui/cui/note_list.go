@@ -79,7 +79,7 @@ func (n *NoteListV) SetNotes(ns []*note.Note) error {
 		}
 	}
 
-	return n.Render()
+	return n.ResetSelection()
 }
 
 // MoveSelectionUp moves selection up by one
@@ -169,6 +169,18 @@ func (n *NoteListV) SetSelection(idx int) error {
 	// I would love to not have to re-render the entire view, but
 	// I have not found a way to insert text at the cursor without
 	// losing color
+	return n.Render()
+}
+
+// ResetSelection resets the selection to the
+// beginning of the list
+func (n *NoteListV) ResetSelection() error {
+	if err := n.v.SetOrigin(0, 0); err != nil {
+		return err
+	}
+	if err := n.v.SetCursor(0, 0); err != nil {
+		return err
+	}
 	return n.Render()
 }
 
