@@ -92,6 +92,11 @@ func (c *CUI) selBSCB(g *gocui.Gui, v *gocui.View) error {
 	if err != nil {
 		return err
 	}
+
+	if err = c.StatusBarView.SetWorkingBookName(c.WBook.Name); err != nil {
+		return err
+	}
+
 	return c.NoteListView.SetNotes(notes)
 }
 
