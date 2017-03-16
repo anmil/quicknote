@@ -44,6 +44,7 @@ func (d *Database) GetAllBooks() ([]*note.Book, error) {
 		}
 
 		books = append(books, b)
+		d.addBookToCache(b)
 	}
 
 	return books, nil
@@ -51,6 +52,10 @@ func (d *Database) GetAllBooks() ([]*note.Book, error) {
 
 // GetOrCreateBookByName gets the Book by name creating it if it does not exists
 func (d *Database) GetOrCreateBookByName(name string) (*note.Book, error) {
+	if b := d.getFromBookCache(name); b != nil {
+		return b, nil
+	}
+
 	if len(name) == 0 {
 		return nil, errors.New("No Notebook name given")
 	}
@@ -71,11 +76,17 @@ func (d *Database) GetOrCreateBookByName(name string) (*note.Book, error) {
 		}
 	}
 
+	d.addBookToCache(bk)
+
 	return bk, nil
 }
 
 // GetBookByName returns the Book for the given name
 func (d *Database) GetBookByName(name string) (*note.Book, error) {
+	if b := d.getFromBookCache(name); b != nil {
+		return b, nil
+	}
+
 	sqlStr := "SELECT id, created, modified, name FROM books WHERE name = ?;"
 
 	stmt, err := d.db.Prepare(sqlStr)
@@ -91,6 +102,8 @@ func (d *Database) GetBookByName(name string) (*note.Book, error) {
 	} else if err != nil {
 		return nil, err
 	}
+
+	d.addBookToCache(b)
 
 	return b, nil
 }
@@ -131,6 +144,8 @@ func (d *Database) CreateBook(b *note.Book) error {
 		tx.Rollback()
 		return err
 	}
+
+	d.addBookToCache(b)
 
 	tx.Commit()
 	return nil
@@ -183,6 +198,9 @@ func (d *Database) MergeBooks(b1 *note.Book, b2 *note.Book) error {
 	if err != nil {
 		return err
 	}
+
+	d.delBookFromCache(b1)
+
 	return nil
 }
 
@@ -200,6 +218,8 @@ func (d *Database) EditBook(b *note.Book) error {
 		tx.Rollback()
 		return err
 	}
+
+	d.addBookToCache(b)
 
 	tx.Commit()
 	return nil
@@ -219,5 +239,26 @@ func (d *Database) DeleteBook(bk *note.Book) error {
 		return err
 	}
 
+	d.delBookFromCache(bk)
+
+	return nil
+}
+
+func (d *Database) addBookToCache(bk *note.Book) {
+	d.bookNameCache[bk.Name] = bk
+}
+
+func (d *Database) delBookFromCache(bk *note.Book) {
+	delete(d.bookNameCache, bk.Name)
+}
+
+func (d *Database) delBookFromCacheS(name string) {
+	delete(d.bookNameCache, name)
+}
+
+func (d *Database) getFromBookCache(name string) *note.Book {
+	if bk, found := d.bookNameCache[name]; found {
+		return bk
+	}
 	return nil
 }

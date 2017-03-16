@@ -23,6 +23,7 @@ import (
 	"reflect"
 
 	// go-sqlite3 must be imported for initialization
+	"github.com/anmil/quicknote/note"
 	_ "github.com/mattn/go-sqlite3"
 )
 
@@ -88,6 +89,9 @@ var ErrInvalidArguments = errors.New("Invalid arguments given to SQLite database
 // Database provides an interface to SQLite
 type Database struct {
 	db *sql.DB
+
+	tagNameCache  map[string]*note.Tag
+	bookNameCache map[string]*note.Book
 }
 
 // NewDatabase returns a data Database
@@ -106,7 +110,11 @@ func NewDatabase(dbPath ...string) (*Database, error) {
 		return nil, err
 	}
 
-	return &Database{db: db}, nil
+	return &Database{
+		db:            db,
+		tagNameCache:  make(map[string]*note.Tag),
+		bookNameCache: make(map[string]*note.Book),
+	}, nil
 }
 
 // Close closes the database

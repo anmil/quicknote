@@ -18,7 +18,6 @@ package sqlite
 
 import (
 	"database/sql"
-	"errors"
 	"strings"
 	"time"
 
@@ -60,31 +59,37 @@ func (d *Database) GetAllTags() ([]*note.Tag, error) {
 
 // GetOrCreateTagByName returns a tag, creating it if it does not exists
 func (d *Database) GetOrCreateTagByName(name string) (*note.Tag, error) {
-	if len(name) == 0 {
-		return nil, errors.New("No Tag name given")
+	if t := d.getFromTagCache(name); t != nil {
+		return t, nil
 	}
 
-	tg, err := d.GetTagByName(name)
+	t, err := d.GetTagByName(name)
 	if err != nil {
 		return nil, err
 	}
-	if tg == nil {
-		tg = &note.Tag{
+	if t == nil {
+		t = &note.Tag{
 			Created:  time.Now(),
 			Modified: time.Now(),
 			Name:     name,
 		}
-		err = d.CreateTag(tg)
+		err = d.CreateTag(t)
 		if err != nil {
 			return nil, err
 		}
 	}
 
-	return tg, nil
+	d.addTagToCache(t)
+
+	return t, nil
 }
 
 // GetTagByName returns the tag with the given name
 func (d *Database) GetTagByName(name string) (*note.Tag, error) {
+	if t := d.getFromTagCache(name); t != nil {
+		return t, nil
+	}
+
 	sqlStr := "SELECT id, created, modified, name FROM tags WHERE name = ?;"
 
 	stmt, err := d.db.Prepare(sqlStr)
@@ -100,6 +105,8 @@ func (d *Database) GetTagByName(name string) (*note.Tag, error) {
 	} else if err != nil {
 		return nil, err
 	}
+
+	d.addTagToCache(t)
 
 	return t, nil
 }
@@ -146,6 +153,8 @@ func (d *Database) CreateTag(t *note.Tag) error {
 		return err
 	}
 
+	d.addTagToCache(t)
+
 	tx.Commit()
 	return nil
 }
@@ -165,6 +174,7 @@ func (d *Database) loadTagsFromRows(rows *sql.Rows) ([]*note.Tag, error) {
 		}
 
 		tags = append(tags, t)
+		d.addTagToCache(t)
 	}
 
 	if err := rows.Err(); err != nil {
@@ -261,5 +271,24 @@ func (d *Database) deleteNoteNookTagsRel(n *note.Note) error {
 		return err
 	}
 
+	return nil
+}
+
+func (d *Database) addTagToCache(tag *note.Tag) {
+	d.tagNameCache[tag.Name] = tag
+}
+
+func (d *Database) delTagFromCache(tag *note.Tag) {
+	delete(d.tagNameCache, tag.Name)
+}
+
+func (d *Database) delTagFromCacheS(name string) {
+	delete(d.tagNameCache, name)
+}
+
+func (d *Database) getFromTagCache(name string) *note.Tag {
+	if tag, found := d.tagNameCache[name]; found {
+		return tag
+	}
 	return nil
 }
