@@ -30,7 +30,7 @@ func init() {
 
 // DeleteBookCmd delete a book and all of it's Notes
 var DeleteBookCmd = &cobra.Command{
-	Use:   "book <book id>",
+	Use:   "book <book name>",
 	Short: "Delete a Book and all of it's Notes",
 	Run:   deleteNotebookCmdRun,
 }
