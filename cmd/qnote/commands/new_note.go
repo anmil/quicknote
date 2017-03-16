@@ -185,7 +185,7 @@ func createNewNote(text string, typ string) {
 	exitOnError(err)
 
 	noteText := editor.Text()
-	noteText = removeButtonComment(noteText)
+	noteText = removeBottomComment(noteText)
 	noteText = strings.TrimSpace(noteText)
 	if len(noteText) == 0 {
 		fmt.Println("No text entered.. aborting")
@@ -222,7 +222,7 @@ func createNewNote(text string, typ string) {
 	utils.PrintNoteColored(n, false)
 }
 
-func removeButtonComment(text string) string {
+func removeBottomComment(text string) string {
 	text = strings.TrimRight(text, "\n")
 	lines := strings.Split(text, "\n")
 
