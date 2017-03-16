@@ -32,12 +32,12 @@ func init() {
 var DeleteBookCmd = &cobra.Command{
 	Use:   "book <book name>",
 	Short: "Delete a Book and all of it's Notes",
-	Run:   deleteNotebookCmdRun,
+	Run:   deleteBookCmdRun,
 }
 
-func deleteNotebookCmdRun(cmd *cobra.Command, args []string) {
+func deleteBookCmdRun(cmd *cobra.Command, args []string) {
 	if len(args) != 1 {
-		fmt.Println("Please give only one Notebook name")
+		fmt.Println("Please give only one Book name")
 		return
 	}
 
@@ -45,11 +45,11 @@ func deleteNotebookCmdRun(cmd *cobra.Command, args []string) {
 	exitOnError(err)
 
 	if bk == nil {
-		fmt.Println("Notebook does not exists")
+		fmt.Println("Book does not exists")
 		return
 	}
 
-	cMsg := "This will delete all notes in this notebook, are you sure?"
+	cMsg := "This will delete all notes in this Book, are you sure?"
 	if skipConfirm || utils.AskForConfirmationMust(cMsg) {
 		err = dbConn.DeleteBook(bk)
 		exitOnError(err)
@@ -57,6 +57,6 @@ func deleteNotebookCmdRun(cmd *cobra.Command, args []string) {
 		err = idxConn.DeleteBook(bk)
 		exitOnError(err)
 
-		fmt.Println("Notebook deleted")
+		fmt.Println("Book deleted")
 	}
 }
