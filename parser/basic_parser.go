@@ -93,6 +93,10 @@ func getTags(text string) []string {
 		tEnd = getTagEndIndex(text, tStart+1)
 		tag := text[tStart+1 : tEnd]
 
+		if unicode.IsPunct(rune(tag[len(tag)-1])) {
+			tag = tag[:len(tag)-1]
+		}
+
 		if _, found := tags[tag]; !found && len(tag) > 1 {
 			tags[strings.ToLower(tag)] = true
 			tagCount++
