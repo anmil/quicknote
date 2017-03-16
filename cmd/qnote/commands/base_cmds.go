@@ -75,7 +75,7 @@ func init() {
 	GetCmd.PersistentFlags().StringVarP(&displayFormat, "display-format", "f", viper.GetString("display_format"),
 		fmt.Sprintf("Format to display notes in [%s]", strings.Join(displayFormatOptions, ", ")))
 
-	DeleteCmd.PersistentFlags().BoolVarP(&skipConfirm, "skip-confirm", "", false, "Do not prompt to confirm action")
+	RootCmd.PersistentFlags().BoolVarP(&skipConfirm, "skip-confirm", "", false, "Do not prompt to confirm action")
 }
 
 // NewCmd create new Note or Notebook
