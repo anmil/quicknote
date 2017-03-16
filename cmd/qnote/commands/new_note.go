@@ -18,7 +18,10 @@
 package commands
 
 import (
+	"encoding/json"
 	"fmt"
+	"io"
+	"os"
 	"strings"
 	"time"
 
@@ -49,6 +52,7 @@ var editorDocMessage = `%s
 func init() {
 	NewCmd.AddCommand(NewNoteCmd)
 	NewCmd.AddCommand(NewURLNoteCmd)
+	NewCmd.AddCommand(NewNoteFromJSONCmd)
 
 	NewNoteCmd.Flags().StringVarP(&noteType, "note-type", "t", "basic",
 		fmt.Sprintf("The new Note's type [%s]", strings.Join(note.NoteTypes, ", ")))
@@ -213,10 +217,7 @@ func createNewNote(text string, typ string) {
 		Tags:     tags,
 	}
 
-	err = dbConn.CreateNote(n)
-	exitOnError(err)
-
-	err = idxConn.IndexNote(n)
+	err = saveNote(n)
 	exitOnError(err)
 
 	utils.PrintNoteColored(n, false)
@@ -239,4 +240,91 @@ func removeBottomComment(text string) string {
 		return ""
 	}
 	return strings.Join(lines[:endIndex+1], "\n")
+}
+
+// NewURLNoteCmd Create new notes from JSON
+var NewNoteFromJSONCmd = &cobra.Command{
+	Use:   "json [<json>]",
+	Short: "Create new notes from JSON",
+	Long: fmt.Sprintf(`Create new notes from JSON
+
+JSON must be in the format
+
+[
+	...
+	{
+		"title": "<title>",
+		"type": "<type>",
+		"tags": ["<tag1>", "<tag2>", ...],
+		"body": "<body>",
+		"book": "<book>"
+	},
+	...
+]
+
+"type" must be one of the following: %s
+If the book does not exists, it will be created
+
+If <json> is note given, qnote will read from stdin
+`, strings.Join(note.NoteTypes, ", ")),
+	Run: newNoteFromJSONCmdRun,
+}
+
+type jNote struct {
+	Title string   `json:"title"`
+	Type  string   `json:"type"`
+	Tags  []string `json:"tags"`
+	Body  string   `json:"body"`
+	Book  string   `json:"book"`
+}
+
+func newNoteFromJSONCmdRun(cmd *cobra.Command, args []string) {
+	var reader io.Reader
+	if len(args) >= 1 {
+		reader = strings.NewReader(args[0])
+	} else {
+		reader = os.Stdin
+	}
+
+	dec := json.NewDecoder(reader)
+	var jnotes []jNote
+	if err := dec.Decode(&jnotes); err != io.EOF && err != nil {
+		exitOnError(err)
+	}
+
+	for _, jn := range jnotes {
+		if !utils.InSliceString(jn.Type, note.NoteTypes) {
+			exitValidationError("invalid type", cmd)
+		}
+
+		book, err := dbConn.GetOrCreateBookByName(jn.Book)
+		exitOnError(err)
+
+		tags := make([]*note.Tag, 0, len(jn.Tags))
+		for _, t := range jn.Tags {
+			tag, err := dbConn.GetOrCreateTagByName(t)
+			exitOnError(err)
+			tags = append(tags, tag)
+		}
+
+		n := &note.Note{
+			Created:  time.Now(),
+			Modified: time.Now(),
+			Book:     book,
+			Type:     jn.Type,
+			Title:    jn.Title,
+			Body:     jn.Body,
+			Tags:     tags,
+		}
+
+		err = saveNote(n)
+		exitOnError(err)
+	}
+}
+
+func saveNote(n *note.Note) error {
+	if err := dbConn.CreateNote(n); err != nil {
+		return err
+	}
+	return idxConn.IndexNote(n)
 }
