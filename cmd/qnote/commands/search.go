@@ -19,6 +19,7 @@ package commands
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/anmil/quicknote/cmd/shared/utils"
 	"github.com/spf13/cobra"
@@ -45,6 +46,9 @@ func init() {
 	SearchCmd.PersistentFlags().IntVarP(&resultsOffset, "offset", "o", 0, "Start point is the result, use for paging")
 	SearchCmd.PersistentFlags().BoolVarP(&queryStringQuery, "query-string-query", "q", viper.GetBool("query_string_query"),
 		"By default qnote will alter the query to include the working notebook tag. Set this to to disable action.")
+
+	SearchCmd.PersistentFlags().StringVarP(&displayFormat, "display-format", "f", viper.GetString("display_format"),
+		fmt.Sprintf("Format to display notes in [%s]", strings.Join(displayFormatOptions, ", ")))
 }
 
 // SearchCmd Search notes
