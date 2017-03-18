@@ -19,7 +19,6 @@ package note
 
 import (
 	"encoding/json"
-	"strings"
 	"time"
 )
 
@@ -65,6 +64,11 @@ func (n *Note) GetTagStringArray() []string {
 
 // MarshalJSON customer json Marshaler
 func (n *Note) MarshalJSON() ([]byte, error) {
+	tags := make([]string, len(n.Tags))
+	for idx, tag := range n.Tags {
+		tags[idx] = tag.Name
+	}
+
 	return json.Marshal(&struct {
 		ID       int64     `json:"id"`
 		Created  time.Time `json:"created"`
@@ -73,7 +77,7 @@ func (n *Note) MarshalJSON() ([]byte, error) {
 		Title    string    `json:"title"`
 		Body     string    `json:"body"`
 		Book     string    `json:"book"`
-		Tags     string    `json:"tags"`
+		Tags     []string  `json:"tags"`
 	}{
 		ID:       n.ID,
 		Created:  n.Created,
@@ -82,6 +86,6 @@ func (n *Note) MarshalJSON() ([]byte, error) {
 		Title:    n.Title,
 		Body:     n.Body,
 		Book:     n.Book.Name,
-		Tags:     strings.Join(n.GetTagStringArray(), ", "),
+		Tags:     tags,
 	})
 }
