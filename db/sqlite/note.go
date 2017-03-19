@@ -27,6 +27,9 @@ import (
 
 // GetNoteByID returns the note for the given ID
 func (d *Database) GetNoteByID(id int64) (*note.Note, error) {
+	d.mux.Lock()
+	defer d.mux.Unlock()
+
 	sqlStr := `SELECT id, created, modified, bk_id, type, title, body FROM notes WHERE id = ?;`
 
 	stmt, err := d.db.Prepare(sqlStr)
@@ -45,11 +48,11 @@ func (d *Database) GetNoteByID(id int64) (*note.Note, error) {
 		return nil, err
 	}
 
-	if err = d.LoadNoteTags(n); err != nil {
+	if err = d.loadNoteTags(n); err != nil {
 		return nil, err
 	}
 
-	if err = d.LoadBook(n.Book); err != nil {
+	if err = d.loadBook(n.Book); err != nil {
 		return nil, err
 	}
 
@@ -58,10 +61,13 @@ func (d *Database) GetNoteByID(id int64) (*note.Note, error) {
 
 // GetAllNotesByIDs returns all notes for the given Notebook
 func (d *Database) GetAllNotesByIDs(ids []int64) ([]*note.Note, error) {
+	d.mux.Lock()
+	defer d.mux.Unlock()
+
 	sqlStr := `SELECT id, created, modified, bk_id, type, title, body FROM notes WHERE id IN (%s);`
 
-	// SQLite has a limit on the number of wild cards that can be given. We must split the query across multiple
-	// calls if this number is exceeded. See splitSliceToChuck for more information
+	// SQLite has a limit on the number of wild cards that can be given.We must split the query
+	// across multiple calls if this number is exceeded. See splitSliceToChuck for more information
 	chucks, err := splitSliceToChuck(ids, 1)
 	if err != nil {
 		return nil, err
@@ -104,6 +110,9 @@ func (d *Database) GetAllNotesByIDs(ids []int64) ([]*note.Note, error) {
 
 // GetAllBookNotes returns all notes for the given Notebook
 func (d *Database) GetAllBookNotes(book *note.Book, sortBy, order string) ([]*note.Note, error) {
+	d.mux.Lock()
+	defer d.mux.Unlock()
+
 	sqlStr := `SELECT id, created, modified, bk_id, type, title, body FROM notes WHERE bk_id = ? ORDER BY %s %s;`
 
 	// This would normally be a really bad idea (sql injection anyone?). But sortBy and order are taking
@@ -131,6 +140,9 @@ func (d *Database) GetAllBookNotes(book *note.Book, sortBy, order string) ([]*no
 
 // GetAllNotes returns all notes
 func (d *Database) GetAllNotes(sortBy, order string) ([]*note.Note, error) {
+	d.mux.Lock()
+	defer d.mux.Unlock()
+
 	sqlStr := `SELECT id, created, modified, bk_id, type, title, body FROM notes ORDER BY %s %s;`
 
 	// See GetAllBookNotes for why I'm doing this
@@ -147,11 +159,15 @@ func (d *Database) GetAllNotes(sortBy, order string) ([]*note.Note, error) {
 
 // CreateNote saves the note to the database
 func (d *Database) CreateNote(n *note.Note) error {
+	d.mux.Lock()
+	defer d.mux.Unlock()
+
 	sqlStr := "INSERT INTO notes (created, modified, bk_id, type, title, body) " +
 		"VALUES (?,?,?,?,?,?);"
 
 	tx, stmt, err := d.getTxStmt(sqlStr)
 	if err != nil {
+		fmt.Println("tx, stmt, err := d.getTxStmt(sqlStr)")
 		return err
 	}
 	defer stmt.Close()
@@ -177,6 +193,9 @@ func (d *Database) CreateNote(n *note.Note) error {
 
 // EditNote updates the note in the database
 func (d *Database) EditNote(n *note.Note) error {
+	d.mux.Lock()
+	defer d.mux.Unlock()
+
 	sqlStr := "UPDATE notes SET modified = ?, title = ?, body = ? WHERE id = ?;"
 
 	tx, stmt, err := d.getTxStmt(sqlStr)
@@ -203,6 +222,9 @@ func (d *Database) EditNote(n *note.Note) error {
 
 // EditNoteByIDBook updates all notes for the given IDs with the Book bk's ID
 func (d *Database) EditNoteByIDBook(ids []int64, bk *note.Book) error {
+	d.mux.Lock()
+	defer d.mux.Unlock()
+
 	sqlStr1 := "UPDATE notes SET bk_id = ? WHERE id in (%s);"
 	sqlStr2 := "UPDATE note_book_tag SET bk_id = ? WHERE note_id in (%s);"
 
@@ -259,6 +281,9 @@ func (d *Database) EditNoteByIDBook(ids []int64, bk *note.Book) error {
 
 // DeleteNote delete note from database
 func (d *Database) DeleteNote(n *note.Note) error {
+	d.mux.Lock()
+	defer d.mux.Unlock()
+
 	sqlStr := `DELETE FROM notes WHERE id = ?;`
 
 	stmt, err := d.db.Prepare(sqlStr)
@@ -292,7 +317,7 @@ func (d *Database) loadNotesFromRows(rows *sql.Rows) ([]*note.Note, error) {
 		}
 		n.Book = books[bkID]
 
-		if err = d.LoadNoteTags(n); err != nil {
+		if err = d.loadNoteTags(n); err != nil {
 			return nil, err
 		}
 
@@ -300,7 +325,7 @@ func (d *Database) loadNotesFromRows(rows *sql.Rows) ([]*note.Note, error) {
 	}
 
 	for _, book := range books {
-		if err := d.LoadBook(book); err != nil {
+		if err := d.loadBook(book); err != nil {
 			return nil, err
 		}
 	}

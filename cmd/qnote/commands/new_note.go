@@ -19,10 +19,12 @@ package commands
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"os"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/PuerkitoBio/goquery"
@@ -286,24 +288,70 @@ func newNoteFromJSONCmdRun(cmd *cobra.Command, args []string) {
 		reader = os.Stdin
 	}
 
-	dec := json.NewDecoder(reader)
-	var jnotes []jNote
-	if err := dec.Decode(&jnotes); err != io.EOF && err != nil {
-		exitOnError(err)
+	var wg sync.WaitGroup
+	var nCnt int64
+
+	jnChan := make(chan *jNote, 1024)
+	results := make(chan error, 2048)
+
+	go func() {
+		for r := range results {
+			nCnt++
+			if r != nil {
+				fmt.Println("Error:", r)
+			}
+		}
+	}()
+
+	for i := 0; i < 16; i++ {
+		wg.Add(1)
+		go createJNoteWorker(i, &wg, jnChan, results)
 	}
 
-	for _, jn := range jnotes {
+	dec := json.NewDecoder(reader)
+	_, err := dec.Token()
+	exitOnError(err)
+
+	for dec.More() {
+		var jn jNote
+		err := dec.Decode(&jn)
+		exitOnError(err)
+
+		jnChan <- &jn
+	}
+
+	_, err = dec.Token()
+	exitOnError(err)
+
+	close(jnChan)
+	wg.Wait()
+	close(results)
+
+	fmt.Printf("%d notes added\n", nCnt)
+}
+
+func createJNoteWorker(id int, wg *sync.WaitGroup, jnotes <-chan *jNote, results chan<- error) {
+	defer wg.Done()
+
+	for jn := range jnotes {
 		if !utils.InSliceString(jn.Type, note.NoteTypes) {
-			exitValidationError("invalid type", cmd)
+			results <- errors.New("Invalid type")
+			continue
 		}
 
 		book, err := dbConn.GetOrCreateBookByName(jn.Book)
-		exitOnError(err)
+		if err != nil {
+			results <- err
+			continue
+		}
 
 		tags := make([]*note.Tag, 0, len(jn.Tags))
 		for _, t := range jn.Tags {
 			tag, err := dbConn.GetOrCreateTagByName(t)
-			exitOnError(err)
+			if err != nil {
+				results <- err
+				continue
+			}
 			tags = append(tags, tag)
 		}
 
@@ -318,7 +366,14 @@ func newNoteFromJSONCmdRun(cmd *cobra.Command, args []string) {
 		}
 
 		err = saveNote(n)
-		exitOnError(err)
+		if err != nil {
+			results <- err
+			continue
+		}
+
+		fmt.Print("Note added: ")
+		utils.PrintNoteColored(n, true)
+		results <- nil
 	}
 }
 

@@ -27,6 +27,9 @@ import (
 
 // GetAllBooks returns all Books
 func (d *Database) GetAllBooks() ([]*note.Book, error) {
+	d.mux.Lock()
+	defer d.mux.Unlock()
+
 	sqlStr := "SELECT id, created, modified, name FROM books;"
 
 	rows, err := d.db.Query(sqlStr)
@@ -83,6 +86,9 @@ func (d *Database) GetOrCreateBookByName(name string) (*note.Book, error) {
 
 // GetBookByName returns the Book for the given name
 func (d *Database) GetBookByName(name string) (*note.Book, error) {
+	d.mux.Lock()
+	defer d.mux.Unlock()
+
 	if b := d.getFromBookCache(name); b != nil {
 		return b, nil
 	}
@@ -110,6 +116,12 @@ func (d *Database) GetBookByName(name string) (*note.Book, error) {
 
 // LoadBook loads the Note's Book
 func (d *Database) LoadBook(b *note.Book) error {
+	d.mux.Lock()
+	defer d.mux.Unlock()
+	return d.loadBook(b)
+}
+
+func (d *Database) loadBook(b *note.Book) error {
 	sqlStr := "SELECT created, modified, name FROM books WHERE id = ?;"
 
 	stmt, err := d.db.Prepare(sqlStr)
@@ -127,6 +139,9 @@ func (d *Database) LoadBook(b *note.Book) error {
 
 // CreateBook saves the Book to the database
 func (d *Database) CreateBook(b *note.Book) error {
+	d.mux.Lock()
+	defer d.mux.Unlock()
+
 	sqlStr := "INSERT INTO books (created, modified, name) VALUES (?,?,?);"
 
 	tx, stmt, err := d.getTxStmt(sqlStr)
@@ -153,6 +168,9 @@ func (d *Database) CreateBook(b *note.Book) error {
 
 // MergeBooks merge all notes from Book b1 into Book b2
 func (d *Database) MergeBooks(b1 *note.Book, b2 *note.Book) error {
+	d.mux.Lock()
+	defer d.mux.Unlock()
+
 	tx, err := d.db.Begin()
 	if err != nil {
 		return err
@@ -206,6 +224,9 @@ func (d *Database) MergeBooks(b1 *note.Book, b2 *note.Book) error {
 
 // EditBook change the book name
 func (d *Database) EditBook(b *note.Book) error {
+	d.mux.Lock()
+	defer d.mux.Unlock()
+
 	sqlStr := "UPDATE books SET name = ?, modified = ? where id = ?;"
 
 	tx, stmt, err := d.getTxStmt(sqlStr)
@@ -227,6 +248,9 @@ func (d *Database) EditBook(b *note.Book) error {
 
 // DeleteBook deletes the Book from the database
 func (d *Database) DeleteBook(bk *note.Book) error {
+	d.mux.Lock()
+	defer d.mux.Unlock()
+
 	sqlStr := "DELETE FROM books WHERE id = ?;"
 
 	stmt, err := d.db.Prepare(sqlStr)

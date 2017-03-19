@@ -26,6 +26,9 @@ import (
 
 // GetAllBookTags returns all tags for the given Book
 func (d *Database) GetAllBookTags(bk *note.Book) ([]*note.Tag, error) {
+	d.mux.Lock()
+	defer d.mux.Unlock()
+
 	sqlStr := "SELECT id, created, modified, name FROM tags WHERE id in " +
 		"(SELECT tag_id FROM note_book_tag WHERE bk_id = ?);"
 
@@ -46,6 +49,9 @@ func (d *Database) GetAllBookTags(bk *note.Book) ([]*note.Tag, error) {
 
 // GetAllTags returns all tags
 func (d *Database) GetAllTags() ([]*note.Tag, error) {
+	d.mux.Lock()
+	defer d.mux.Unlock()
+
 	sqlStr := "SELECT id, created, modified, name FROM tags;"
 
 	rows, err := d.db.Query(sqlStr)
@@ -86,6 +92,9 @@ func (d *Database) GetOrCreateTagByName(name string) (*note.Tag, error) {
 
 // GetTagByName returns the tag with the given name
 func (d *Database) GetTagByName(name string) (*note.Tag, error) {
+	d.mux.Lock()
+	defer d.mux.Unlock()
+
 	if t := d.getFromTagCache(name); t != nil {
 		return t, nil
 	}
@@ -113,6 +122,12 @@ func (d *Database) GetTagByName(name string) (*note.Tag, error) {
 
 // LoadNoteTags loads all the tags for the given Note
 func (d *Database) LoadNoteTags(n *note.Note) error {
+	d.mux.Lock()
+	defer d.mux.Unlock()
+	return d.loadNoteTags(n)
+}
+
+func (d *Database) loadNoteTags(n *note.Note) error {
 	sqlStr := "SELECT id, created, modified, name FROM tags WHERE id in " +
 		"(SELECT tag_id FROM note_tag WHERE note_id = ?);"
 
@@ -134,6 +149,9 @@ func (d *Database) LoadNoteTags(n *note.Note) error {
 
 // CreateTag saves the tag to the database
 func (d *Database) CreateTag(t *note.Tag) error {
+	d.mux.Lock()
+	defer d.mux.Unlock()
+
 	sqlStr := "INSERT INTO tags (created, modified, name) VALUES (?,?,?);"
 
 	tx, stmt, err := d.getTxStmt(sqlStr)
