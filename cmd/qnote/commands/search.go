@@ -93,7 +93,7 @@ func searchCmdRun(cmd *cobra.Command, args []string) {
 
 	err = utils.PrintNotes(notes, displayFormat)
 	exitOnError(err)
-	fmt.Printf("Showing %d-%d of %d\n", resultsOffset, resultsOffset+len(ids), total)
+	fmt.Printf("\nShowing %d-%d of %d\n", resultsOffset, resultsOffset+len(ids), total)
 }
 
 // SearchReindexCmd Re-indexes all Notes in all Books
@@ -114,11 +114,8 @@ func searchReindexCmdRun(cmd *cobra.Command, args []string) {
 	notes, err := dbConn.GetAllNotes(sortBy, displayOrder)
 	exitOnError(err)
 
-	// TODO: look into using goroutines for speeding this up
-	for _, n := range notes {
-		err := idxConn.IndexNote(n)
-		exitOnError(err)
-	}
+	err = idxConn.IndexNotes(notes)
+	exitOnError(err)
 
 	fmt.Printf("Finished indexing notes (%d)\n", len(notes))
 }

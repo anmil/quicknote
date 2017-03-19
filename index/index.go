@@ -19,6 +19,7 @@ package index
 
 import (
 	"errors"
+	"strconv"
 
 	"github.com/anmil/quicknote/index/bleve"
 	"github.com/anmil/quicknote/index/elastic"
@@ -42,7 +43,11 @@ type Index interface {
 func NewIndex(provider string, options ...string) (Index, error) {
 	switch provider {
 	case "bleve":
-		return bleve.NewIndex(options[0])
+		shards, err := strconv.Atoi(options[1])
+		if err != nil {
+			return nil, err
+		}
+		return bleve.NewIndex(options[0], shards)
 	case "elastic":
 		return elastic.NewIndex(options[0], options[1])
 	default:

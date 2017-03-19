@@ -71,7 +71,8 @@ func init() {
 	viper.SetDefault("default_notebook", "General")
 	viper.SetDefault("db_provider", "sqlite")
 
-	viper.SetDefault("index_provider", "elastic")
+	viper.SetDefault("index_provider", "bleve")
+	viper.SetDefault("bleve_shard_count", "16")
 	viper.SetDefault("elastic_url", "http://127.0.0.1:9200")
 	viper.SetDefault("elastic_index_name", "qnote")
 
@@ -143,8 +144,8 @@ func GetIndexConn() (index.Index, error) {
 }
 
 func getBleveConn() (index.Index, error) {
-	fp := path.Join(DataDirectory, "index.bleve")
-	idxConn, err := index.NewIndex("bleve", fp)
+	shareds := viper.GetString("bleve_shard_count")
+	idxConn, err := index.NewIndex("bleve", DataDirectory, shareds)
 	if err != nil {
 		return nil, err
 	}
@@ -222,6 +223,18 @@ db_provider: sqlite
 # are supported.
 index_provider: bleve
 # index_provider: elastic
+
+# Qnote will split notes across multiple Bleve indexes
+# bleve_shard_count is the number of indexes to use.
+# The number of shards you should use depends on you
+# read/write disc speed. If the default does not work
+# you will need to experiment to find the correct value.
+#
+# If you change this value, you will need to delete the .bleve
+# index folders in the data directory and call
+# "qnote search reindex" to rebuilt the indexes
+bleve_shard_count: 16
+
 # elastic_url: http://127.0.0.1:9200
 # elastic_index_name: qnote
 `

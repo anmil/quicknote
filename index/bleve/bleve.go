@@ -19,7 +19,12 @@ package bleve
 
 import (
 	"fmt"
+	"io/ioutil"
+	"log"
+	"os"
+	"path"
 	"strconv"
+	"sync"
 	"time"
 
 	"github.com/blevesearch/bleve"
@@ -28,6 +33,7 @@ import (
 )
 
 type indexNote struct {
+	ID       int64
 	Created  time.Time `json:"created"`
 	Modified time.Time `json:"modified"`
 	Type     string    `json:"type"`
@@ -37,27 +43,164 @@ type indexNote struct {
 	Tags     []string  `json:"tags"`
 }
 
-// Index provides the interface to Bleve
-type Index struct {
-	db bleve.Index
+type bIndex struct {
+	Index bleve.Index
+	mux   sync.Mutex
 }
 
-// NewIndex returns a new Index
-func NewIndex(indexPath string) (*Index, error) {
-	indexMapping := bleve.NewIndexMapping()
-	index, err := bleve.New(indexPath, indexMapping)
-	if err == bleve.ErrorIndexPathExists {
-		index, err = bleve.Open(indexPath)
+func (b *bIndex) BatchIndex(wg *sync.WaitGroup, notes []*indexNote) {
+	b.mux.Lock()
+	defer b.mux.Unlock()
+	defer wg.Done()
+
+	log.Printf("Batch Size: %d\n", len(notes))
+	batch := b.Index.NewBatch()
+	for _, iN := range notes {
+		err := batch.Index(strconv.FormatInt(iN.ID, 10), iN)
+		if err != nil {
+			panic(err)
+		}
 	}
+
+	err := b.Index.Batch(batch)
+	if err != nil {
+		panic(err)
+	}
+}
+
+func (b *bIndex) DeleteBook(wg *sync.WaitGroup, bk *note.Book) {
+	defer wg.Done()
+
+	ids, err := b.getNextDeleteBatch(bk)
+	if err != nil {
+		panic(err)
+	}
+
+	fmt.Println("Deleting", len(ids), "notes")
+	for len(ids) > 0 {
+		batch := b.Index.NewBatch()
+		for _, id := range ids {
+			batch.Delete(id)
+		}
+
+		err := b.Index.Batch(batch)
+		if err != nil {
+			panic(err)
+		}
+
+		ids, err = b.getNextDeleteBatch(bk)
+		if err != nil {
+			panic(err)
+		}
+
+		fmt.Println("Deleting", len(ids), "notes")
+	}
+}
+
+func (b *bIndex) getNextDeleteBatch(bk *note.Book) ([]string, error) {
+	query := fmt.Sprintf("+book:%s", bk.Name)
+	q := bleve.NewQueryStringQuery(query)
+
+	search := bleve.NewSearchRequest(q)
+	search.Size = 1000
+
+	res, err := b.Index.Search(search)
 	if err != nil {
 		return nil, err
 	}
-	return &Index{db: index}, nil
+
+	ids := make([]string, 0, res.Total)
+	for _, h := range res.Hits {
+		ids = append(ids, h.ID)
+	}
+
+	return ids, err
+}
+
+// Index provides the interface to Bleve
+type Index struct {
+	db bleve.IndexAlias
+
+	shards  int
+	indexes []*bIndex
+
+	indexIdx     int
+	indexIdxFile string
+}
+
+// NewIndex returns a new Index
+func NewIndex(indexPath string, shards int) (*Index, error) {
+	indexMapping := bleve.NewIndexMapping()
+
+	bindexes := make([]*bIndex, shards)
+	indexes := make([]bleve.Index, shards)
+
+	for i := 0; i < shards; i++ {
+		p := path.Join(indexPath, fmt.Sprintf("index-%d.bleve", i))
+		index, err := bleve.New(p, indexMapping)
+		if err == bleve.ErrorIndexPathExists {
+			index, err = bleve.Open(p)
+			if err != nil {
+				return nil, err
+			}
+		}
+		indexes[i] = index
+		bindexes[i] = &bIndex{Index: index}
+	}
+
+	indexAlias := bleve.NewIndexAlias(indexes...)
+	indexIdxFile := path.Join(indexPath, "current_index")
+
+	idx := &Index{
+		db:           indexAlias,
+		shards:       shards,
+		indexes:      bindexes,
+		indexIdxFile: indexIdxFile,
+	}
+
+	err := idx.loadIndexIdx()
+	if err != nil {
+		return nil, err
+	}
+
+	return idx, nil
+}
+
+func (b *Index) getIndex() *bIndex {
+	b.indexIdx++
+	if b.indexIdx >= b.shards {
+		b.indexIdx = 0
+	}
+	err := b.saveIndexIdx()
+	if err != nil {
+		panic(err)
+	}
+	return b.indexes[b.indexIdx]
+}
+
+func (b *Index) loadIndexIdx() error {
+	if _, err := os.Stat(b.indexIdxFile); !os.IsNotExist(err) {
+		data, err := ioutil.ReadFile(b.indexIdxFile)
+		if err != nil {
+			return nil
+		}
+		b.indexIdx, err = strconv.Atoi(string(data))
+		return err
+	}
+
+	b.indexIdx = 0
+	return nil
+}
+
+func (b *Index) saveIndexIdx() error {
+	s := strconv.Itoa(b.indexIdx)
+	return ioutil.WriteFile(b.indexIdxFile, []byte(s), 0600)
 }
 
 // IndexNote creates or updates a note in Bleve index
 func (b *Index) IndexNote(n *note.Note) error {
 	iN := &indexNote{
+		ID:       n.ID,
 		Created:  n.Created,
 		Modified: n.Modified,
 		Type:     n.Type,
@@ -67,17 +210,64 @@ func (b *Index) IndexNote(n *note.Note) error {
 		Tags:     n.GetTagStringArray(),
 	}
 
-	err := b.db.Index(strconv.FormatInt(n.ID, 10), iN)
+	err := b.getIndex().Index.Index(strconv.FormatInt(n.ID, 10), iN)
 	return err
 }
 
 // IndexNotes creates or updates a list of notes in Bleve index
 func (b *Index) IndexNotes(notes []*note.Note) error {
+	var wg sync.WaitGroup
+	var batchSize int64
+
+	index := b.getIndex()
+	bNotes := make([]*indexNote, 0)
 	for _, n := range notes {
-		if err := b.IndexNote(n); err != nil {
-			return err
+		iN := &indexNote{
+			ID:       n.ID,
+			Created:  n.Created,
+			Modified: n.Modified,
+			Type:     n.Type,
+			Title:    n.Title,
+			Body:     n.Body,
+			Book:     n.Book.Name,
+			Tags:     n.GetTagStringArray(),
+		}
+
+		batchSize += 16 + // timestamps are 8 bytes each
+			int64(len(n.Type)) +
+			int64(len(n.Title)) +
+			int64(len(n.Body)) +
+			int64(len(n.Book.Name)) +
+			int64(len(n.GetTagStringArray()))
+
+		bNotes = append(bNotes, iN)
+
+		// After some experimenting I've found that batch performance depends more
+		// on the byte size than the number of records. Using Bolt as the store
+		// provider. Some testing shows that around 64KB is the sweet spot.
+		if batchSize >= 65536 {
+			wg.Add(1)
+			go index.BatchIndex(&wg, bNotes)
+			bNotes = make([]*indexNote, 0)
+
+			index = b.getIndex()
+			batchSize = 0
 		}
 	}
+
+	if len(bNotes) > 0 {
+		wg.Add(1)
+		go index.BatchIndex(&wg, bNotes)
+	}
+
+	wg.Wait()
+
+	nCnt := uint64(0)
+	for _, idx := range b.indexes {
+		cnt, _ := idx.Index.DocCount()
+		nCnt += cnt
+	}
+
 	return nil
 }
 
@@ -150,46 +340,26 @@ func (b *Index) SearchNotePhrase(query string, bk *note.Book, sort string, limit
 
 // DeleteNote deletes note from index
 func (b *Index) DeleteNote(n *note.Note) error {
-	return b.db.Delete(strconv.FormatInt(n.ID, 10))
-}
-
-// DeleteBook deletes all notes in the index for the notebook
-func (b *Index) DeleteBook(bk *note.Book) error {
-	batch, ids, err := b.getNextDeleteBatch(bk)
-	if err != nil {
-		return err
-	}
-
-	for len(ids) > 0 {
-		for _, id := range ids {
-			batch.Delete(id)
-		}
-		b.db.Batch(batch)
-		batch, ids, err = b.getNextDeleteBatch(bk)
+	for _, i := range b.indexes {
+		err := i.Index.Delete(strconv.FormatInt(n.ID, 10))
 		if err != nil {
 			return err
 		}
 	}
-
 	return nil
 }
 
-func (b *Index) getNextDeleteBatch(bk *note.Book) (*bleve.Batch, []string, error) {
-	batch := b.db.NewBatch()
+// DeleteBook deletes all notes in the index for the notebook
+func (b *Index) DeleteBook(bk *note.Book) error {
+	var wg sync.WaitGroup
 
-	query := fmt.Sprintf("+Book:%s", bk.Name)
-	q := bleve.NewQueryStringQuery(query)
-	search := bleve.NewSearchRequest(q)
-	search.Size = 1000
-	res, err := b.db.Search(search)
-	if err != nil {
-		return nil, nil, err
+	fmt.Println("Removing book from index:", bk.Name)
+
+	for _, i := range b.indexes {
+		wg.Add(1)
+		go i.DeleteBook(&wg, bk)
 	}
 
-	ids := make([]string, 0, res.Total)
-	for _, h := range res.Hits {
-		ids = append(ids, h.ID)
-	}
-
-	return batch, ids, err
+	wg.Wait()
+	return nil
 }
