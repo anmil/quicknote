@@ -34,7 +34,7 @@ import (
 // Version information
 var (
 	VersionMajor    = 0
-	VersionMinor    = 3
+	VersionMinor    = 4
 	VersionRevision = 0
 )
 
