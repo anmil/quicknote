@@ -330,6 +330,8 @@ func (b *Index) SearchNote(query string, limit, offset int) ([]int64, uint64, er
 func (b *Index) SearchNotePhrase(query string, bk *note.Book, sort string, limit, offset int) ([]int64, uint64, error) {
 	boolQuery := bleve.NewBooleanQuery()
 
+	// Bleve does not support phrase prefix query natively
+	// https://github.com/blevesearch/bleve/issues/377
 	var disquery bquery.Query
 	words := strings.Fields(query)
 	if len(words) == 1 {
