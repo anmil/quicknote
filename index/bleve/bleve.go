@@ -20,20 +20,21 @@ package bleve
 import (
 	"fmt"
 	"io/ioutil"
-	"log"
 	"os"
 	"path"
 	"strconv"
+	"strings"
 	"sync"
 	"time"
 
 	"github.com/blevesearch/bleve"
+	bquery "github.com/blevesearch/bleve/search/query"
 
 	"github.com/anmil/quicknote/note"
 )
 
 type indexNote struct {
-	ID       int64
+	ID       int64     `json:"id"`
 	Created  time.Time `json:"created"`
 	Modified time.Time `json:"modified"`
 	Type     string    `json:"type"`
@@ -53,7 +54,6 @@ func (b *bIndex) BatchIndex(wg *sync.WaitGroup, notes []*indexNote) {
 	defer b.mux.Unlock()
 	defer wg.Done()
 
-	log.Printf("Batch Size: %d\n", len(notes))
 	batch := b.Index.NewBatch()
 	for _, iN := range notes {
 		err := batch.Index(strconv.FormatInt(iN.ID, 10), iN)
@@ -76,7 +76,6 @@ func (b *bIndex) DeleteBook(wg *sync.WaitGroup, bk *note.Book) {
 		panic(err)
 	}
 
-	fmt.Println("Deleting", len(ids), "notes")
 	for len(ids) > 0 {
 		batch := b.Index.NewBatch()
 		for _, id := range ids {
@@ -92,8 +91,6 @@ func (b *bIndex) DeleteBook(wg *sync.WaitGroup, bk *note.Book) {
 		if err != nil {
 			panic(err)
 		}
-
-		fmt.Println("Deleting", len(ids), "notes")
 	}
 }
 
@@ -178,6 +175,17 @@ func (b *Index) getIndex() *bIndex {
 	return b.indexes[b.indexIdx]
 }
 
+func (b *Index) getDocIndex(id string) (*bIndex, error) {
+	for _, idx := range b.indexes {
+		if doc, err := idx.Index.Document(id); err != nil {
+			return nil, err
+		} else if doc != nil {
+			return idx, nil
+		}
+	}
+	return nil, nil
+}
+
 func (b *Index) loadIndexIdx() error {
 	if _, err := os.Stat(b.indexIdxFile); !os.IsNotExist(err) {
 		data, err := ioutil.ReadFile(b.indexIdxFile)
@@ -210,7 +218,18 @@ func (b *Index) IndexNote(n *note.Note) error {
 		Tags:     n.GetTagStringArray(),
 	}
 
-	err := b.getIndex().Index.Index(strconv.FormatInt(n.ID, 10), iN)
+	idS := strconv.FormatInt(n.ID, 10)
+	idx, err := b.getDocIndex(idS)
+	if err != nil {
+		return err
+	}
+
+	if idx != nil {
+		err = idx.Index.Index(idS, iN)
+	} else {
+		err = b.getIndex().Index.Index(idS, iN)
+	}
+
 	return err
 }
 
@@ -231,6 +250,18 @@ func (b *Index) IndexNotes(notes []*note.Note) error {
 			Body:     n.Body,
 			Book:     n.Book.Name,
 			Tags:     n.GetTagStringArray(),
+		}
+
+		// Check if this note has been indexed already
+		// update it if so
+		idS := strconv.FormatInt(n.ID, 10)
+		if idx, err := b.getDocIndex(idS); err != nil {
+			return err
+		} else if idx != nil {
+			if err = idx.Index.Index(idS, iN); err != nil {
+				return err
+			}
+			continue
 		}
 
 		batchSize += 16 + // timestamps are 8 bytes each
@@ -299,8 +330,33 @@ func (b *Index) SearchNote(query string, limit, offset int) ([]int64, uint64, er
 func (b *Index) SearchNotePhrase(query string, bk *note.Book, sort string, limit, offset int) ([]int64, uint64, error) {
 	boolQuery := bleve.NewBooleanQuery()
 
-	matchPrefixQuery := bleve.NewPrefixQuery(query)
-	boolQuery.AddMust(matchPrefixQuery)
+	var disquery bquery.Query
+	words := strings.Fields(query)
+	if len(words) == 1 {
+		disquery = bleve.NewDisjunctionQuery(
+			bleve.NewPrefixQuery(query),
+			bleve.NewMatchQuery(query),
+		)
+	} else {
+		var phrase string
+		if len(words) == 2 {
+			phrase = words[0]
+		} else {
+			phrase = strings.Join(words[0:len(words)-2], " ")
+		}
+
+		disquery = bleve.NewDisjunctionQuery(
+			bleve.NewMatchPhraseQuery(query), // whole thing as a phrase, or..
+			bleve.NewConjunctionQuery( // phrase + prefix
+				bleve.NewMatchPhraseQuery(phrase),
+				bleve.NewPrefixQuery(words[len(words)-1]),
+			),
+		)
+	}
+	boolQuery.AddMust(disquery)
+
+	// matchPrefixQuery := bleve.NewPrefixQuery(query)
+	// boolQuery.AddMust(matchPrefixQuery)
 
 	if bk != nil {
 		matchBookQuery := bleve.NewQueryStringQuery(fmt.Sprintf("+book:%s", bk.Name))
@@ -352,8 +408,6 @@ func (b *Index) DeleteNote(n *note.Note) error {
 // DeleteBook deletes all notes in the index for the notebook
 func (b *Index) DeleteBook(bk *note.Book) error {
 	var wg sync.WaitGroup
-
-	fmt.Println("Removing book from index:", bk.Name)
 
 	for _, i := range b.indexes {
 		wg.Add(1)
