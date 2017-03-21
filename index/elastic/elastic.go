@@ -60,7 +60,14 @@ type Index struct {
 func NewIndex(host, idxName string) (*Index, error) {
 	ctx := context.Background()
 
-	client, err := elastic.NewClient()
+	var err error
+	var client *elastic.Client
+	if len(host) != 0 {
+		client, err = elastic.NewClient(elastic.SetURL(host))
+	} else {
+		client, err = elastic.NewClient()
+	}
+
 	if err != nil {
 		return nil, err
 	}
@@ -214,6 +221,20 @@ func (b *Index) DeleteBook(bk *note.Book) error {
 		Do(ctx)
 	if err != nil {
 		return err
+	}
+	return nil
+}
+
+// DeleteIndex deletes this index
+func (b *Index) DeleteIndex() error {
+	ctx := context.Background()
+
+	deleteIndex, err := b.client.DeleteIndex(b.indexName).Do(ctx)
+	if err != nil {
+		return err
+	}
+	if !deleteIndex.Acknowledged {
+		return errors.New("Delete Index was not acknowledged")
 	}
 	return nil
 }
