@@ -13,11 +13,7 @@ var index *Index
 var tempDir = path.Join(os.TempDir(), "qnote-test")
 var shardCnt = 3
 
-func TestIndexNoteBleveIntegration(t *testing.T) {
-	if testing.Short() {
-		t.Skip("Skipping TestIndexNoteBleveIntegration in short mode")
-	}
-
+func TestIndexNoteBleveUnit(t *testing.T) {
 	// Ensure there is no left overs
 	os.RemoveAll(tempDir)
 
