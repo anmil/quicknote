@@ -13,9 +13,9 @@ var index *Index
 var tempDir = path.Join(os.TempDir(), "qnote-test")
 var shardCnt = 3
 
-func TestIndexNoteIntegration(t *testing.T) {
+func TestIndexNoteBleveIntegration(t *testing.T) {
 	if testing.Short() {
-		t.Skip("Skipping TestIndexNoteIntegration in short mode")
+		t.Skip("Skipping TestIndexNoteBleveIntegration in short mode")
 	}
 
 	// Ensure there is no left overs
@@ -25,12 +25,12 @@ func TestIndexNoteIntegration(t *testing.T) {
 	index, err = NewIndex(tempDir, shardCnt)
 	test.CheckErrorFatal(t, err)
 
-	t.Run("index-note", testIndexNote)
-	t.Run("index-notes", testIndexNotes)
-	t.Run("search-note", testSearchNote)
-	t.Run("search-phrase-note", testSearchNotePhrase)
-	t.Run("delete-note", testDeleteNote)
-	t.Run("delete-book", testDeleteBook)
+	t.Run("bleve-index-note", testIndexNote)
+	t.Run("bleve-index-notes", testIndexNotes)
+	t.Run("bleve-search-note", testSearchNote)
+	t.Run("bleve-search-phrase-note", testSearchNotePhrase)
+	t.Run("bleve-delete-note", testDeleteNote)
+	t.Run("bleve-delete-book", testDeleteBook)
 
 	os.RemoveAll(tempDir)
 }

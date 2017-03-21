@@ -12,21 +12,21 @@ var indexName = "qnote-test"
 var indexHost = "http://127.0.0.1:9200"
 var index *Index
 
-func TestIndexIntegration(t *testing.T) {
+func TestIndexNoteElasticSearchIntegration(t *testing.T) {
 	if testing.Short() {
-		t.Skip("Skipping TestIndexNoteIntegration in short mode")
+		t.Skip("Skipping TestIndexNoteElasticSearchIntegration in short mode")
 	}
 
 	var err error
 	index, err = NewIndex(indexHost, indexName)
 	test.CheckErrorFatal(t, err)
 
-	t.Run("index-note", testIndexNote)
-	t.Run("index-notes", testIndexNotes)
-	t.Run("search-note", testSearchNote)
-	t.Run("search-phrase-note", testSearchNotePhrase)
-	t.Run("delete-note", testDeleteNote)
-	t.Run("delete-book", testDeleteBook)
+	t.Run("elasticsearch-index-note", testIndexNote)
+	t.Run("elasticsearch-index-notes", testIndexNotes)
+	t.Run("elasticsearch-search-note", testSearchNote)
+	t.Run("elasticsearch-search-phrase-note", testSearchNotePhrase)
+	t.Run("elasticsearch-delete-note", testDeleteNote)
+	t.Run("elasticsearch-delete-book", testDeleteBook)
 
 	err = index.DeleteIndex()
 	test.CheckError(t, err)
