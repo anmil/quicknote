@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"sort"
 	"testing"
+
+	"github.com/anmil/quicknote/test"
 )
 
 var bpText1 = `This is test 1 of the basic parser
@@ -37,7 +39,7 @@ Nulla tincidunt diam eu purus laoreet condimentum. Duis
 tempus, turpis vitae varius ullamcorper, sapien erat
 cursus lacus, et lacinia ligula dolor #quis nibh.#`
 
-func TestBasicParser(t *testing.T) {
+func TestBasicParserUnit(t *testing.T) {
 	parser := &BasicParser{}
 	parser.Parse(bpText1)
 
@@ -46,7 +48,7 @@ func TestBasicParser(t *testing.T) {
 	}
 	tags := parser.Tags()
 	sort.Strings(tags)
-	if !stringSliceEq(tags, bpText1Tags) {
+	if !test.StringSliceEq(tags, bpText1Tags) {
 		t.Error("Parser returned incorrect tags")
 	}
 	if parser.Body() != bpText1Body {
@@ -61,7 +63,7 @@ func TestBasicParser(t *testing.T) {
 	}
 	tags = parser.Tags()
 	sort.Strings(tags)
-	if !stringSliceEq(tags, bpText2Tags) {
+	if !test.StringSliceEq(tags, bpText2Tags) {
 		fmt.Println(parser.Tags())
 		fmt.Println(bpText2Tags)
 		t.Error("Parser returned incorrect tags")
@@ -69,22 +71,4 @@ func TestBasicParser(t *testing.T) {
 	if parser.Body() != bpText2Body {
 		t.Error("Parser returned incorrect body")
 	}
-}
-
-func stringSliceEq(a, b []string) bool {
-	if a == nil && b == nil {
-		return true
-	}
-	if a == nil || b == nil {
-		return false
-	}
-	if len(a) != len(b) {
-		return false
-	}
-	for i := range a {
-		if a[i] != b[i] {
-			return false
-		}
-	}
-	return true
 }

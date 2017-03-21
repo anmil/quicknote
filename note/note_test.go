@@ -6,7 +6,7 @@ import (
 	"time"
 )
 
-func TestNoteJSON(t *testing.T) {
+func TestNoteJSONUnit(t *testing.T) {
 	bk := NewBook()
 	bk.Name = "TestBook"
 
