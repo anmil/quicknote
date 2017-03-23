@@ -26,7 +26,7 @@ import (
 )
 
 // GetAllBooks returns all Books
-func (d *Database) GetAllBooks() ([]*note.Book, error) {
+func (d *Database) GetAllBooks() (note.Books, error) {
 	d.mux.Lock()
 	defer d.mux.Unlock()
 
@@ -38,7 +38,7 @@ func (d *Database) GetAllBooks() ([]*note.Book, error) {
 	}
 	defer rows.Close()
 
-	books := make([]*note.Book, 0)
+	books := make(note.Books, 0)
 	for rows.Next() {
 		b := note.NewBook()
 		err := rows.Scan(&b.ID, &b.Created, &b.Modified, &b.Name)

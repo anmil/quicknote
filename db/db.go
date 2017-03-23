@@ -38,7 +38,7 @@ type DB interface {
 	EditNote(n *note.Note) error
 	DeleteNote(n *note.Note) error
 
-	GetAllBooks() ([]*note.Book, error)
+	GetAllBooks() (note.Books, error)
 	GetOrCreateBookByName(name string) (*note.Book, error)
 	GetBookByName(name string) (*note.Book, error)
 	CreateBook(b *note.Book) error
