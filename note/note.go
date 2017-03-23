@@ -19,6 +19,8 @@ package note
 
 import (
 	"encoding/json"
+	"fmt"
+	"strings"
 	"time"
 )
 
@@ -51,6 +53,18 @@ type Note struct {
 // NewNote returns a new Note
 func NewNote() *Note {
 	return &Note{}
+}
+
+func (n *Note) String() string {
+	bk := ""
+	if n.Book != nil {
+		bk = n.Book.Name
+	}
+	tags := ""
+	if len(n.Tags) > 0 {
+		tags = strings.Join(n.GetTagStringArray(), ", ")
+	}
+	return fmt.Sprintf("<Note ID: %d Title: %s Book: %s Tags: %s>", n.ID, n.Title, bk, tags)
 }
 
 // GetTagStringArray returns a list of the note's tag names

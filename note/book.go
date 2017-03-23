@@ -17,7 +17,10 @@
 
 package note
 
-import "time"
+import (
+	"fmt"
+	"time"
+)
 
 // Book is a collection of notes
 type Book struct {
@@ -31,4 +34,8 @@ type Book struct {
 // NewBook returns a new Book
 func NewBook() *Book {
 	return &Book{}
+}
+
+func (b *Book) String() string {
+	return fmt.Sprintf("<Book ID: %d Name: %s>", b.ID, b.Name)
 }

@@ -17,7 +17,10 @@
 
 package note
 
-import "time"
+import (
+	"fmt"
+	"time"
+)
 
 // Tag is a term used as meta data for more
 // accurate searching and labeling.
@@ -32,4 +35,8 @@ type Tag struct {
 // NewTag returns a new Tag
 func NewTag() *Tag {
 	return &Tag{}
+}
+
+func (t *Tag) String() string {
+	return fmt.Sprintf("<Tag ID: %d Name: %s>", t.ID, t.Name)
 }
