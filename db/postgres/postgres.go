@@ -68,6 +68,15 @@ CREATE TABLE IF NOT EXISTS note_book_tag (
 	PRIMARY KEY (note_id, bk_id, tag_id)
 );`
 
+var dropAllTables = `
+DROP INDEX IF EXISTS idx_notes_bk_id;
+DROP TABLE IF EXISTS note_book_tag;
+DROP TABLE IF EXISTS note_tag;
+DROP TABLE IF EXISTS tags;
+DROP TABLE IF EXISTS notes;
+DROP TABLE IF EXISTS books;
+`
+
 // ErrInvalidArguments invalid arguments were given
 var ErrInvalidArguments = errors.New("Invalid arguments given to PostgreSQL database")
 
@@ -102,6 +111,30 @@ func NewDatabase(options ...string) (*Database, error) {
 	return &Database{db: db}, nil
 }
 
+// GetTableNames returns a list of all table names
+func (d *Database) GetTableNames() ([]string, error) {
+	sqlStr := "SELECT table_name FROM information_schema.tables WHERE table_schema='public' AND table_type='BASE TABLE';"
+
+	rows, err := d.db.Query(sqlStr)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	tables := make([]string, 0)
+	for rows.Next() {
+		var name string
+		err := rows.Scan(&name)
+		if err != nil {
+			return nil, err
+		}
+
+		tables = append(tables, name)
+	}
+
+	return tables, nil
+}
+
 // Close closes the database
 func (d *Database) Close() error {
 	return d.db.Close()
@@ -119,6 +152,18 @@ func (d *Database) getTxStmt(sqlStmt string) (*sql.Tx, *sql.Stmt, error) {
 	}
 
 	return tx, stmt, nil
+}
+
+func (d *Database) ResetTables() error {
+	if _, err := d.db.Exec(dropAllTables); err != nil {
+		return err
+	}
+
+	if _, err := d.db.Exec(schema); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 // splitSliceToChuck slice s into chucks containing the maximum number of
