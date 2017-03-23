@@ -218,13 +218,6 @@ db_provider: sqlite
 #   port: 5432
 #   sslmode: disable
 
-# This options are not required for sqlite
-# db_host: 127.0.0.1
-# db_port: 5432
-# db_name: qnote
-# db_user: qnote
-# db_pass: *****
-
 # Indexing provider
 # Currently only Bleve and Elasticsearch
 # Bleve: http://www.blevesearch.com/docs/Query-String-Query/
