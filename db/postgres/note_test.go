@@ -25,6 +25,10 @@ import (
 )
 
 func TestCreateNotePostgresIntegration(t *testing.T) {
+	if testing.Short() {
+		t.Skip("Skipping TestCreateNotePostgresIntegration in short mode")
+	}
+
 	db := openDatabase(t)
 	defer closeDatabase(db, t)
 
@@ -35,6 +39,10 @@ func TestCreateNotePostgresIntegration(t *testing.T) {
 }
 
 func TestGetNotePostgresIntegration(t *testing.T) {
+	if testing.Short() {
+		t.Skip("Skipping TestGetNotePostgresIntegration in short mode")
+	}
+
 	db := openDatabase(t)
 	defer closeDatabase(db, t)
 
@@ -48,6 +56,10 @@ func TestGetNotePostgresIntegration(t *testing.T) {
 }
 
 func TestEditNotePostgresIntegration(t *testing.T) {
+	if testing.Short() {
+		t.Skip("Skipping TestEditNotePostgresIntegration in short mode")
+	}
+
 	db := openDatabase(t)
 	defer closeDatabase(db, t)
 
@@ -76,6 +88,10 @@ func TestEditNotePostgresIntegration(t *testing.T) {
 }
 
 func TestEditNoteBookPostgresIntegration(t *testing.T) {
+	if testing.Short() {
+		t.Skip("Skipping TestEditNoteBookPostgresIntegration in short mode")
+	}
+
 	db := openDatabase(t)
 	defer closeDatabase(db, t)
 
@@ -93,6 +109,10 @@ func TestEditNoteBookPostgresIntegration(t *testing.T) {
 }
 
 func TestDeleteNotePostgresIntegration(t *testing.T) {
+	if testing.Short() {
+		t.Skip("Skipping TestDeleteNotePostgresIntegration in short mode")
+	}
+
 	db := openDatabase(t)
 	defer closeDatabase(db, t)
 

@@ -25,6 +25,10 @@ import (
 )
 
 func TestGetTagByNamePostgresIntegration(t *testing.T) {
+	if testing.Short() {
+		t.Skip("Skipping TestGetTagByNamePostgresIntegration in short mode")
+	}
+
 	db := openDatabase(t)
 	defer closeDatabase(db, t)
 
@@ -41,6 +45,10 @@ func TestGetTagByNamePostgresIntegration(t *testing.T) {
 }
 
 func TestGetOrCreateTagPostgresIntegration(t *testing.T) {
+	if testing.Short() {
+		t.Skip("Skipping TestGetOrCreateTagPostgresIntegration in short mode")
+	}
+
 	db := openDatabase(t)
 	defer closeDatabase(db, t)
 
@@ -61,6 +69,10 @@ func TestGetOrCreateTagPostgresIntegration(t *testing.T) {
 }
 
 func TestGetTagsPostgresIntegration(t *testing.T) {
+	if testing.Short() {
+		t.Skip("Skipping TestGetTagsPostgresIntegration in short mode")
+	}
+
 	db := openDatabase(t)
 	defer closeDatabase(db, t)
 
@@ -82,6 +94,10 @@ func TestGetTagsPostgresIntegration(t *testing.T) {
 }
 
 func TestLoadNoteTagsPostgresIntegration(t *testing.T) {
+	if testing.Short() {
+		t.Skip("Skipping TestLoadNoteTagsPostgresIntegration in short mode")
+	}
+
 	db := openDatabase(t)
 	defer closeDatabase(db, t)
 

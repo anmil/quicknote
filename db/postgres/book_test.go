@@ -25,6 +25,10 @@ import (
 )
 
 func TestCreateBookPostgresIntegration(t *testing.T) {
+	if testing.Short() {
+		t.Skip("Skipping TestCreateBookPostgresIntegration in short mode")
+	}
+
 	db := openDatabase(t)
 	defer closeDatabase(db, t)
 
@@ -37,6 +41,10 @@ func TestCreateBookPostgresIntegration(t *testing.T) {
 }
 
 func TestLoadBookPostgresIntegration(t *testing.T) {
+	if testing.Short() {
+		t.Skip("Skipping TestLoadBookPostgresIntegration in short mode")
+	}
+
 	db := openDatabase(t)
 	defer closeDatabase(db, t)
 
@@ -58,6 +66,10 @@ func TestLoadBookPostgresIntegration(t *testing.T) {
 }
 
 func TestEditBookPostgresIntegration(t *testing.T) {
+	if testing.Short() {
+		t.Skip("Skipping TestEditBookPostgresIntegration in short mode")
+	}
+
 	db := openDatabase(t)
 	defer closeDatabase(db, t)
 
@@ -81,6 +93,10 @@ func TestEditBookPostgresIntegration(t *testing.T) {
 }
 
 func TestGetBookByNamePostgresIntegration(t *testing.T) {
+	if testing.Short() {
+		t.Skip("Skipping TestGetBookByNamePostgresIntegration in short mode")
+	}
+
 	db := openDatabase(t)
 	defer closeDatabase(db, t)
 
@@ -95,6 +111,10 @@ func TestGetBookByNamePostgresIntegration(t *testing.T) {
 }
 
 func TestGetOrCreateBookPostgresIntegration(t *testing.T) {
+	if testing.Short() {
+		t.Skip("Skipping TestGetOrCreateBookPostgresIntegration in short mode")
+	}
+
 	db := openDatabase(t)
 	defer closeDatabase(db, t)
 
@@ -116,6 +136,10 @@ func TestGetOrCreateBookPostgresIntegration(t *testing.T) {
 }
 
 func TestGetAllBooksPostgresIntegration(t *testing.T) {
+	if testing.Short() {
+		t.Skip("Skipping TestGetAllBooksPostgresIntegration in short mode")
+	}
+
 	db := openDatabase(t)
 	defer closeDatabase(db, t)
 
@@ -131,6 +155,10 @@ func TestGetAllBooksPostgresIntegration(t *testing.T) {
 }
 
 func TestMergeBookPostgresIntegration(t *testing.T) {
+	if testing.Short() {
+		t.Skip("Skipping TestMergeBookPostgresIntegration in short mode")
+	}
+
 	db := openDatabase(t)
 	defer closeDatabase(db, t)
 
@@ -156,6 +184,10 @@ func TestMergeBookPostgresIntegration(t *testing.T) {
 }
 
 func TestDeleteBookPostgresIntegration(t *testing.T) {
+	if testing.Short() {
+		t.Skip("Skipping TestDeleteBookPostgresIntegration in short mode")
+	}
+
 	db := openDatabase(t)
 	defer closeDatabase(db, t)
 

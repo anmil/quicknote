@@ -78,6 +78,10 @@ func closeDatabase(db *Database, t *testing.T) {
 }
 
 func TestCreateDatabasePostgresIntegration(t *testing.T) {
+	if testing.Short() {
+		t.Skip("Skipping TestCreateDatabasePostgresIntegration in short mode")
+	}
+
 	db := openDatabase(t)
 	defer closeDatabase(db, t)
 
