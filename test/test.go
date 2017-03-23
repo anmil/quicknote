@@ -1,21 +1,5 @@
 package test
 
-import (
-	"testing"
-)
-
-func CheckError(t *testing.T, err error) {
-	if err != nil {
-		t.Error(err)
-	}
-}
-
-func CheckErrorFatal(t *testing.T, err error) {
-	if err != nil {
-		t.Fatal(err)
-	}
-}
-
 func StringSliceEq(a, b []string) bool {
 	if a == nil && b == nil {
 		return true

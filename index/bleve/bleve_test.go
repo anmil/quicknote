@@ -1,38 +1,35 @@
-package elastic
+package bleve
 
 import (
 	"fmt"
+	"os"
+	"path"
 	"testing"
-	"time"
 
 	"github.com/anmil/quicknote/test"
 )
 
-var indexName = "qnote-test"
-var indexHost = "http://127.0.0.1:9200"
 var index *Index
+var tempDir = path.Join(os.TempDir(), "qnote-test")
+var shardCnt = 3
 
-func TestIndexNoteElasticSearchIntegration(t *testing.T) {
-	if testing.Short() {
-		t.Skip("Skipping TestIndexNoteElasticSearchIntegration in short mode")
-	}
+func TestIndexNoteBleveUnit(t *testing.T) {
+	// Ensure there is no left overs
+	os.RemoveAll(tempDir)
+	defer os.RemoveAll(tempDir)
 
 	var err error
-	index, err = NewIndex(indexHost, indexName)
+	index, err = NewIndex(tempDir, shardCnt)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	t.Run("elasticsearch-index-note", testIndexNote)
-	t.Run("elasticsearch-index-notes", testIndexNotes)
-	t.Run("elasticsearch-search-note", testSearchNote)
-	t.Run("elasticsearch-search-phrase-note", testSearchNotePhrase)
-	t.Run("elasticsearch-delete-note", testDeleteNote)
-	t.Run("elasticsearch-delete-book", testDeleteBook)
-
-	if err := index.DeleteIndex(); err != nil {
-		t.Fatal(err)
-	}
+	t.Run("bleve-index-note", testIndexNote)
+	t.Run("bleve-index-notes", testIndexNotes)
+	t.Run("bleve-search-note", testSearchNote)
+	t.Run("bleve-search-phrase-note", testSearchNotePhrase)
+	t.Run("bleve-delete-note", testDeleteNote)
+	t.Run("bleve-delete-book", testDeleteBook)
 }
 
 func testIndexNote(t *testing.T) {
@@ -55,12 +52,7 @@ func testSearchNote(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	// Have to wait at least 1 second for the index to complete
-	// I hate this, but there is no API to block till completion
-	// https://github.com/elastic/elasticsearch/issues/1063
-	time.Sleep(time.Millisecond * 1000)
-
-	query := fmt.Sprintf("id:%d", n.ID)
+	query := fmt.Sprintf("+id:%d", n.ID)
 	if ids, total, err := index.SearchNote(query, 10, 0); err != nil {
 		t.Fatal(err)
 	} else if total != 1 {
@@ -77,8 +69,6 @@ func testSearchNotePhrase(t *testing.T) {
 	if err := index.IndexNote(n); err != nil {
 		t.Fatal(err)
 	}
-
-	time.Sleep(time.Millisecond * 1000)
 
 	query := "This is test 1 of the basic par"
 	if ids, total, err := index.SearchNotePhrase(query, nil, "asc", 10, 0); err != nil {
@@ -98,9 +88,7 @@ func testDeleteNote(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	time.Sleep(time.Millisecond * 1000)
-
-	query := fmt.Sprintf("id:%d", n.ID)
+	query := fmt.Sprintf("+id:%d", n.ID)
 	if ids, total, err := index.SearchNote(query, 10, 0); err != nil {
 		t.Fatal(err)
 	} else if total != 1 {
@@ -115,9 +103,7 @@ func testDeleteNote(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	time.Sleep(time.Millisecond * 1000)
-
-	query = fmt.Sprintf("id:%d", n.ID)
+	query = fmt.Sprintf("+id:%d", n.ID)
 	if _, total, err := index.SearchNote(query, 10, 0); err != nil {
 		t.Fatal(err)
 	} else if total != 0 {
@@ -133,9 +119,7 @@ func testDeleteBook(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	time.Sleep(time.Millisecond * 1000)
-
-	query := fmt.Sprintf("book:%s", n.Book.Name)
+	query := fmt.Sprintf("+book:%s", n.Book.Name)
 	if ids, total, err := index.SearchNote(query, 10, 0); err != nil {
 		t.Fatal(err)
 	} else if int(total) != len(notes) {
@@ -147,8 +131,6 @@ func testDeleteBook(t *testing.T) {
 	if err := index.DeleteBook(n.Book); err != nil {
 		t.Fatal(err)
 	}
-
-	time.Sleep(time.Millisecond * 1000)
 
 	query = fmt.Sprintf("book:%s", n.Book.Name)
 	if _, total, err := index.SearchNote(query, 10, 0); err != nil {
