@@ -3,7 +3,9 @@ package test
 
 import (
 	"encoding/json"
+	"sort"
 	"strings"
+	"testing"
 	"time"
 
 	"github.com/anmil/quicknote/note"
@@ -55,8 +57,6 @@ var notesJSON = `[
   }
 ]`
 
-var TestNotes []*note.Note
-
 type JsonNote struct {
 	ID       int64     `json:"id"`
 	Created  time.Time `json:"created"`
@@ -68,34 +68,26 @@ type JsonNote struct {
 	Tags     []string  `json:"tags"`
 }
 
-var noteBooks map[string]*note.Book
-
-func getBook(name string) *note.Book {
-	if bk, found := noteBooks[name]; found {
-		return bk
-	}
-	bk := note.NewBook()
-	bk.Name = name
-	noteBooks[name] = bk
-	return bk
-}
-
-var noteTags map[string]*note.Tag
-
-func getTag(name string) *note.Tag {
-	if t, found := noteTags[name]; found {
-		return t
-	}
-	t := note.NewTag()
-	t.Name = name
-	noteTags[name] = t
-	return t
-}
-
 func init() {
 	noteBooks = make(map[string]*note.Book)
 	noteTags = make(map[string]*note.Tag)
+}
 
+type Notes []*note.Note
+
+func (n Notes) Len() int {
+	return len(n)
+}
+
+func (n Notes) Less(i, j int) bool {
+	return n[i].ID < n[j].ID
+}
+
+func (n Notes) Swap(i, j int) {
+	n[i], n[j] = n[j], n[i]
+}
+
+func GetTestNotes() Notes {
 	reader := strings.NewReader(notesJSON)
 	dec := json.NewDecoder(reader)
 
@@ -105,7 +97,7 @@ func init() {
 		panic(err)
 	}
 
-	TestNotes = make([]*note.Note, len(jsonNotes))
+	testNotes := make([]*note.Note, len(jsonNotes))
 	for idx, jn := range jsonNotes {
 		tags := make([]*note.Tag, len(jn.Tags))
 		for i, t := range jn.Tags {
@@ -122,6 +114,47 @@ func init() {
 		n.Book = getBook(jn.Book)
 		n.Tags = tags
 
-		TestNotes[idx] = n
+		testNotes[idx] = n
 	}
+
+	return testNotes
+}
+
+func CheckNotes(t *testing.T, notes1, notes2 []*note.Note) {
+	nnNotes := Notes{}
+	for _, t := range notes1 {
+		nnNotes = append(nnNotes, t)
+	}
+	sort.Sort(nnNotes)
+
+	nNotes := Notes{}
+	for _, t := range notes2 {
+		nNotes = append(nNotes, t)
+	}
+	sort.Sort(nNotes)
+
+	if !NoteSliceEq(nnNotes, nNotes) {
+		t.Fatal("Did not received the corrected Notes")
+	}
+}
+
+func NoteSliceEq(a, b []*note.Note) bool {
+	if a == nil && b == nil {
+		return true
+	}
+	if a == nil || b == nil {
+		return false
+	}
+	if len(a) != len(b) {
+		return false
+	}
+	for i := range a {
+		if a[i].Title != b[i].Title {
+			return false
+		}
+		if a[i].Body != b[i].Body {
+			return false
+		}
+	}
+	return true
 }

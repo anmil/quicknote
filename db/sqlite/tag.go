@@ -139,7 +139,7 @@ func (d *Database) loadNoteTags(n *note.Note) error {
 
 	rows, err := stmt.Query(n.ID)
 	if err != nil {
-		return nil
+		return err
 	}
 	defer rows.Close()
 
@@ -175,11 +175,6 @@ func (d *Database) CreateTag(t *note.Tag) error {
 
 	tx.Commit()
 	return nil
-}
-
-// GetTagsByName returns the Tag for the given name
-func (d *Database) GetTagsByName(name string) (*note.Tag, error) {
-	return nil, nil
 }
 
 func (d *Database) loadTagsFromRows(rows *sql.Rows) ([]*note.Tag, error) {
@@ -248,20 +243,20 @@ func (d *Database) createNoteBookTagRel(n *note.Note, t *note.Tag, tx *sql.Tx) e
 	return nil
 }
 
-func (d *Database) deleteTagRal(n *note.Note) error {
-	if err := d.deleteNoteTagsRel(n); err != nil {
+func (d *Database) deleteTagRal(n *note.Note, tx *sql.Tx) error {
+	if err := d.deleteNoteTagsRel(n, tx); err != nil {
 		return err
 	}
-	if err := d.deleteNoteNookTagsRel(n); err != nil {
+	if err := d.deleteNoteNookTagsRel(n, tx); err != nil {
 		return err
 	}
 	return nil
 }
 
-func (d *Database) deleteNoteTagsRel(n *note.Note) error {
+func (d *Database) deleteNoteTagsRel(n *note.Note, tx *sql.Tx) error {
 	sqlStr := "DELETE FROM note_tag WHERE note_id = ?"
 
-	stmt, err := d.db.Prepare(sqlStr)
+	stmt, err := tx.Prepare(sqlStr)
 	if err != nil {
 		return err
 	}
@@ -275,10 +270,10 @@ func (d *Database) deleteNoteTagsRel(n *note.Note) error {
 	return nil
 }
 
-func (d *Database) deleteNoteNookTagsRel(n *note.Note) error {
+func (d *Database) deleteNoteNookTagsRel(n *note.Note, tx *sql.Tx) error {
 	sqlStr := "DELETE FROM note_book_tag WHERE note_id = ?"
 
-	stmt, err := d.db.Prepare(sqlStr)
+	stmt, err := tx.Prepare(sqlStr)
 	if err != nil {
 		return err
 	}

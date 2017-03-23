@@ -103,8 +103,8 @@ func NewDatabase(options ...string) (*Database, error) {
 }
 
 // Close closes the database
-func (d *Database) Close() {
-	d.db.Close()
+func (d *Database) Close() error {
+	return d.db.Close()
 }
 
 func (d *Database) getTxStmt(sqlStmt string) (*sql.Tx, *sql.Stmt, error) {

@@ -55,7 +55,7 @@ type DB interface {
 	GetOrCreateTagByName(name string) (*note.Tag, error)
 	GetTagByName(name string) (*note.Tag, error)
 
-	Close()
+	Close() error
 }
 
 // NewDatabase returns a new database for the given provider

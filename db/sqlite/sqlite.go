@@ -89,8 +89,9 @@ var ErrInvalidArguments = errors.New("Invalid arguments given to SQLite database
 
 // Database provides an interface to SQLite
 type Database struct {
-	db  *sql.DB
-	mux *sync.Mutex
+	db     *sql.DB
+	mux    *sync.Mutex
+	DBPath string
 
 	tagNameCache  map[string]*note.Tag
 	bookNameCache map[string]*note.Book
@@ -107,6 +108,9 @@ func NewDatabase(dbPath ...string) (*Database, error) {
 		return nil, err
 	}
 
+	// db.SetMaxIdleConns(1)
+	// db.SetMaxOpenConns(1)
+
 	_, err = db.Exec(schema)
 	if err != nil {
 		return nil, err
@@ -115,14 +119,42 @@ func NewDatabase(dbPath ...string) (*Database, error) {
 	return &Database{
 		db:            db,
 		mux:           &sync.Mutex{},
+		DBPath:        dbPath[0],
 		tagNameCache:  make(map[string]*note.Tag),
 		bookNameCache: make(map[string]*note.Book),
 	}, nil
 }
 
+// GetTableNames returns a list of all table names
+func (d *Database) GetTableNames() ([]string, error) {
+	d.mux.Lock()
+	defer d.mux.Unlock()
+
+	sqlStr := "SELECT name FROM sqlite_master WHERE type='table' ORDER BY name;"
+
+	rows, err := d.db.Query(sqlStr)
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
+
+	tables := make([]string, 0)
+	for rows.Next() {
+		var name string
+		err := rows.Scan(&name)
+		if err != nil {
+			return nil, err
+		}
+
+		tables = append(tables, name)
+	}
+
+	return tables, nil
+}
+
 // Close closes the database
-func (d *Database) Close() {
-	d.db.Close()
+func (d *Database) Close() error {
+	return d.db.Close()
 }
 
 func (d *Database) getTxStmt(sqlStmt string) (*sql.Tx, *sql.Stmt, error) {

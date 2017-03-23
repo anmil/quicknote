@@ -93,6 +93,7 @@ func (d *Database) GetAllNotesByIDs(ids []int64) ([]*note.Note, error) {
 		defer stmt.Close()
 
 		rows, err := stmt.Query(qids...)
+
 		if err != nil {
 			return nil, err
 		}
@@ -208,11 +209,11 @@ func (d *Database) EditNote(n *note.Note) error {
 		return err
 	}
 
-	if d.deleteTagRal(n); err != nil {
+	if err := d.deleteTagRal(n, tx); err != nil {
 		tx.Rollback()
 		return err
 	}
-	if d.createTagRal(n, tx); err != nil {
+	if err := d.createTagRal(n, tx); err != nil {
 		tx.Rollback()
 		return err
 	}
