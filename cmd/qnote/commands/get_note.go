@@ -57,6 +57,10 @@ func getNoteCmdRun(cmd *cobra.Command, args []string) {
 		notes, err := dbConn.GetAllNotesByIDs(noteIDs)
 		exitOnError(err)
 
+		if displayFormat == "short" && displayTextOneResult && len(notes) == 1 {
+			displayFormat = "text"
+		}
+
 		err = utils.PrintNotes(notes, displayFormat)
 		exitOnError(err)
 	} else {
@@ -84,6 +88,11 @@ This is the same as 'gnote ls notes' except it returns all Notes in all Books`,
 func getNoteAllCmdRun(cmd *cobra.Command, args []string) {
 	notes, err := dbConn.GetAllNotes(sortBy, displayOrder)
 	exitOnError(err)
+
+	if displayFormat == "short" && displayTextOneResult && len(notes) == 1 {
+		displayFormat = "text"
+	}
+
 	err = utils.PrintNotes(notes, displayFormat)
 	exitOnError(err)
 }

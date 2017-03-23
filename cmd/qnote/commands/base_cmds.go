@@ -28,11 +28,12 @@ import (
 
 // Command line variables
 var (
-	workingNotebookName string
-	displayOrder        string
-	sortBy              string
-	displayFormat       string
-	skipConfirm         bool
+	workingNotebookName  string
+	displayOrder         string
+	sortBy               string
+	displayFormat        string
+	displayTextOneResult bool
+	skipConfirm          bool
 )
 
 var displayOrderOptions = []string{
@@ -64,7 +65,8 @@ func init() {
 
 	viper.SetDefault("display_order", "asc")
 	viper.SetDefault("order_by", "modified")
-	viper.SetDefault("display_format", "text")
+	viper.SetDefault("display_format", "short")
+	viper.SetDefault("display_text_for_one_result", "true")
 
 	GetCmd.PersistentFlags().StringVarP(&displayOrder, "display-order", "d", viper.GetString("display_order"),
 		fmt.Sprintf("The order to display Notebook, Notes, Tags [%s]", strings.Join(displayOrderOptions, ", ")))
@@ -74,6 +76,9 @@ func init() {
 
 	GetCmd.PersistentFlags().StringVarP(&displayFormat, "display-format", "f", viper.GetString("display_format"),
 		fmt.Sprintf("Format to display notes in [%s]", strings.Join(displayFormatOptions, ", ")))
+
+	GetCmd.PersistentFlags().BoolVarP(&displayTextOneResult, "text-single-result", "", viper.GetBool("display_text_for_one_result"),
+		fmt.Sprintf("Display in text mode when there is only one result"))
 
 	RootCmd.PersistentFlags().BoolVarP(&skipConfirm, "skip-confirm", "", false, "Do not prompt to confirm action")
 }

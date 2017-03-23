@@ -49,6 +49,9 @@ func init() {
 
 	SearchCmd.PersistentFlags().StringVarP(&displayFormat, "display-format", "f", viper.GetString("display_format"),
 		fmt.Sprintf("Format to display notes in [%s]", strings.Join(displayFormatOptions, ", ")))
+
+	SearchCmd.PersistentFlags().BoolVarP(&displayTextOneResult, "text-single-result", "", viper.GetBool("display_text_for_one_result"),
+		fmt.Sprintf("Display in text mode when there is only one result"))
 }
 
 // SearchCmd Search notes
@@ -90,6 +93,10 @@ func searchCmdRun(cmd *cobra.Command, args []string) {
 
 	notes, err := dbConn.GetAllNotesByIDs(ids)
 	exitOnError(err)
+
+	if displayFormat == "short" && displayTextOneResult && len(notes) == 1 {
+		displayFormat = "text"
+	}
 
 	err = utils.PrintNotes(notes, displayFormat)
 	exitOnError(err)

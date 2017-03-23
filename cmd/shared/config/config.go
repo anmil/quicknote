@@ -186,6 +186,15 @@ display_order: asc
 # Options: id, created, modified, title
 order_by: modified
 
+# Format to print note results in
+# Options: ids, text, short, json, csv
+display_format: short
+
+# If display_format is in short mode and there was
+# only one results from a 'get' or 'search' command
+# display the result in text format
+display_text_for_one_result: true
+
 # Number of results to return for search queries
 search_results_limit: 15
 
