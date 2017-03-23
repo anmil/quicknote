@@ -7,21 +7,7 @@ import (
 	"github.com/anmil/quicknote/note"
 )
 
-type Tags []*note.Tag
-
-func (t Tags) Len() int {
-	return len(t)
-}
-
-func (t Tags) Less(i, j int) bool {
-	return t[i].ID < t[j].ID
-}
-
-func (t Tags) Swap(i, j int) {
-	t[i], t[j] = t[j], t[i]
-}
-
-var AllTags Tags
+var AllTags note.Tags
 var noteTags map[string]*note.Tag
 
 func getTag(name string) *note.Tag {
@@ -37,14 +23,14 @@ func getTag(name string) *note.Tag {
 	return t
 }
 
-func CheckTags(t *testing.T, tag1, tag2 Tags) {
-	nnTags := Tags{}
+func CheckTags(t *testing.T, tag1, tag2 note.Tags) {
+	nnTags := note.Tags{}
 	for _, t := range tag1 {
 		nnTags = append(nnTags, t)
 	}
 	sort.Sort(nnTags)
 
-	nTags := Tags{}
+	nTags := note.Tags{}
 	for _, t := range tag2 {
 		nTags = append(nTags, t)
 	}
@@ -55,7 +41,7 @@ func CheckTags(t *testing.T, tag1, tag2 Tags) {
 	}
 }
 
-func TagSliceEq(a, b Tags) bool {
+func TagSliceEq(a, b note.Tags) bool {
 	if a == nil && b == nil {
 		return true
 	}

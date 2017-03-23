@@ -103,3 +103,17 @@ func (n *Note) MarshalJSON() ([]byte, error) {
 		Tags:     tags,
 	})
 }
+
+type Notes []*Note
+
+func (n Notes) Len() int {
+	return len(n)
+}
+
+func (n Notes) Less(i, j int) bool {
+	return n[i].ID < n[j].ID
+}
+
+func (n Notes) Swap(i, j int) {
+	n[i], n[j] = n[j], n[i]
+}

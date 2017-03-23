@@ -73,21 +73,7 @@ func init() {
 	noteTags = make(map[string]*note.Tag)
 }
 
-type Notes []*note.Note
-
-func (n Notes) Len() int {
-	return len(n)
-}
-
-func (n Notes) Less(i, j int) bool {
-	return n[i].ID < n[j].ID
-}
-
-func (n Notes) Swap(i, j int) {
-	n[i], n[j] = n[j], n[i]
-}
-
-func GetTestNotes() Notes {
+func GetTestNotes() note.Notes {
 	reader := strings.NewReader(notesJSON)
 	dec := json.NewDecoder(reader)
 
@@ -97,7 +83,7 @@ func GetTestNotes() Notes {
 		panic(err)
 	}
 
-	testNotes := make([]*note.Note, len(jsonNotes))
+	testNotes := make(note.Notes, len(jsonNotes))
 	for idx, jn := range jsonNotes {
 		tags := make([]*note.Tag, len(jn.Tags))
 		for i, t := range jn.Tags {
@@ -120,14 +106,14 @@ func GetTestNotes() Notes {
 	return testNotes
 }
 
-func CheckNotes(t *testing.T, notes1, notes2 []*note.Note) {
-	nnNotes := Notes{}
+func CheckNotes(t *testing.T, notes1, notes2 note.Notes) {
+	nnNotes := note.Notes{}
 	for _, t := range notes1 {
 		nnNotes = append(nnNotes, t)
 	}
 	sort.Sort(nnNotes)
 
-	nNotes := Notes{}
+	nNotes := note.Notes{}
 	for _, t := range notes2 {
 		nNotes = append(nNotes, t)
 	}
@@ -138,7 +124,7 @@ func CheckNotes(t *testing.T, notes1, notes2 []*note.Note) {
 	}
 }
 
-func NoteSliceEq(a, b []*note.Note) bool {
+func NoteSliceEq(a, b note.Notes) bool {
 	if a == nil && b == nil {
 		return true
 	}

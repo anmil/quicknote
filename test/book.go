@@ -7,21 +7,7 @@ import (
 	"github.com/anmil/quicknote/note"
 )
 
-type Books []*note.Book
-
-func (b Books) Len() int {
-	return len(b)
-}
-
-func (b Books) Less(i, j int) bool {
-	return b[i].ID < b[j].ID
-}
-
-func (b Books) Swap(i, j int) {
-	b[i], b[j] = b[j], b[i]
-}
-
-var AllBooks Books
+var AllBooks note.Books
 var noteBooks map[string]*note.Book
 
 func getBook(name string) *note.Book {
@@ -37,14 +23,14 @@ func getBook(name string) *note.Book {
 	return bk
 }
 
-func CheckBooks(t *testing.T, bks1, bks2 Books) {
-	nnBks := Books{}
+func CheckBooks(t *testing.T, bks1, bks2 note.Books) {
+	nnBks := note.Books{}
 	for _, t := range bks1 {
 		nnBks = append(nnBks, t)
 	}
 	sort.Sort(nnBks)
 
-	nBks := Books{}
+	nBks := note.Books{}
 	for _, t := range bks2 {
 		nBks = append(nBks, t)
 	}
@@ -55,7 +41,7 @@ func CheckBooks(t *testing.T, bks1, bks2 Books) {
 	}
 }
 
-func BookSliceEq(a, b Books) bool {
+func BookSliceEq(a, b note.Books) bool {
 	if a == nil && b == nil {
 		return true
 	}

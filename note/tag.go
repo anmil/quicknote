@@ -40,3 +40,17 @@ func NewTag() *Tag {
 func (t *Tag) String() string {
 	return fmt.Sprintf("<Tag ID: %d Name: %s>", t.ID, t.Name)
 }
+
+type Tags []*Tag
+
+func (t Tags) Len() int {
+	return len(t)
+}
+
+func (t Tags) Less(i, j int) bool {
+	return t[i].ID < t[j].ID
+}
+
+func (t Tags) Swap(i, j int) {
+	t[i], t[j] = t[j], t[i]
+}

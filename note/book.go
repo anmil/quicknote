@@ -39,3 +39,17 @@ func NewBook() *Book {
 func (b *Book) String() string {
 	return fmt.Sprintf("<Book ID: %d Name: %s>", b.ID, b.Name)
 }
+
+type Books []*Book
+
+func (b Books) Len() int {
+	return len(b)
+}
+
+func (b Books) Less(i, j int) bool {
+	return b[i].ID < b[j].ID
+}
+
+func (b Books) Swap(i, j int) {
+	b[i], b[j] = b[j], b[i]
+}
