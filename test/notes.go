@@ -101,7 +101,7 @@ func GetTestNotes() note.Notes {
 
 	testNotes := make(note.Notes, len(jsonNotes))
 	for idx, jn := range jsonNotes {
-		tags := make([]*note.Tag, len(jn.Tags))
+		tags := make(note.Tags, len(jn.Tags))
 		for i, t := range jn.Tags {
 			tags[i] = getTag(t)
 		}

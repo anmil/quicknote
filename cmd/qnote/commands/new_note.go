@@ -202,7 +202,7 @@ func createNewNote(text string, typ string) {
 	exitOnError(err)
 	p.Parse(noteText)
 
-	tags := make([]*note.Tag, 0, len(p.Tags()))
+	tags := make(note.Tags, 0, len(p.Tags()))
 	for _, t := range p.Tags() {
 		tag, err := dbConn.GetOrCreateTagByName(t)
 		exitOnError(err)
@@ -345,7 +345,7 @@ func createJNoteWorker(id int, wg *sync.WaitGroup, jnotes <-chan *jNote, results
 			continue
 		}
 
-		tags := make([]*note.Tag, 0, len(jn.Tags))
+		tags := make(note.Tags, 0, len(jn.Tags))
 		for _, t := range jn.Tags {
 			tag, err := dbConn.GetOrCreateTagByName(t)
 			if err != nil {

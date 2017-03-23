@@ -69,7 +69,7 @@ func editNoteCmdRun(cmd *cobra.Command, args []string) {
 	exitOnError(err)
 	p.Parse(editor.Text())
 
-	tags := make([]*note.Tag, 0, len(p.Tags()))
+	tags := make(note.Tags, 0, len(p.Tags()))
 	for _, t := range p.Tags() {
 		tag, err := dbConn.GetOrCreateTagByName(t)
 		exitOnError(err)

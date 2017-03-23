@@ -25,7 +25,7 @@ import (
 )
 
 // GetAllBookTags returns all tags for the given Book
-func (d *Database) GetAllBookTags(bk *note.Book) ([]*note.Tag, error) {
+func (d *Database) GetAllBookTags(bk *note.Book) (note.Tags, error) {
 	d.mux.Lock()
 	defer d.mux.Unlock()
 
@@ -48,7 +48,7 @@ func (d *Database) GetAllBookTags(bk *note.Book) ([]*note.Tag, error) {
 }
 
 // GetAllTags returns all tags
-func (d *Database) GetAllTags() ([]*note.Tag, error) {
+func (d *Database) GetAllTags() (note.Tags, error) {
 	d.mux.Lock()
 	defer d.mux.Unlock()
 
@@ -177,8 +177,8 @@ func (d *Database) CreateTag(t *note.Tag) error {
 	return nil
 }
 
-func (d *Database) loadTagsFromRows(rows *sql.Rows) ([]*note.Tag, error) {
-	tags := make([]*note.Tag, 0)
+func (d *Database) loadTagsFromRows(rows *sql.Rows) (note.Tags, error) {
+	tags := make(note.Tags, 0)
 	for rows.Next() {
 		t := note.NewTag()
 		err := rows.Scan(&t.ID, &t.Created, &t.Modified, &t.Name)

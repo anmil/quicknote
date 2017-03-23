@@ -156,7 +156,7 @@ func printDetailedNoteColored(n *note.Note) {
 	}
 }
 
-func colorTags(tags []*note.Tag) []string {
+func colorTags(tags note.Tags) []string {
 	ctags := make([]string, 0, len(tags))
 	for i := 0; i < len(tags); i++ {
 		ctags = append(ctags, FgBlue(tags[i].Name))

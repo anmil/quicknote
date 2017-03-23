@@ -89,7 +89,7 @@ func TestLoadNoteTagsSQLiteUnit(t *testing.T) {
 	saveNote(t, db, n)
 
 	tags := n.Tags
-	n.Tags = make([]*note.Tag, 0)
+	n.Tags = make(note.Tags, 0)
 
 	if err := db.LoadNoteTags(n); err != nil {
 		t.Fatal(err)

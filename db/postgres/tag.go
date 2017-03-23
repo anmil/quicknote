@@ -27,7 +27,7 @@ import (
 )
 
 // GetAllBookTags returns all tags for the given Book
-func (d *Database) GetAllBookTags(bk *note.Book) ([]*note.Tag, error) {
+func (d *Database) GetAllBookTags(bk *note.Book) (note.Tags, error) {
 	sqlStr := "SELECT id, created, modified, name FROM tags WHERE id in " +
 		"(SELECT tag_id FROM note_book_tag WHERE bk_id = $1);"
 
@@ -47,7 +47,7 @@ func (d *Database) GetAllBookTags(bk *note.Book) ([]*note.Tag, error) {
 }
 
 // GetAllTags returns all tags
-func (d *Database) GetAllTags() ([]*note.Tag, error) {
+func (d *Database) GetAllTags() (note.Tags, error) {
 	sqlStr := "SELECT id, created, modified, name FROM tags;"
 
 	rows, err := d.db.Query(sqlStr)
@@ -150,8 +150,8 @@ func (d *Database) GetTagsByName(name string) (*note.Tag, error) {
 	return nil, nil
 }
 
-func (d *Database) loadTagsFromRows(rows *sql.Rows) ([]*note.Tag, error) {
-	tags := make([]*note.Tag, 0)
+func (d *Database) loadTagsFromRows(rows *sql.Rows) (note.Tags, error) {
+	tags := make(note.Tags, 0)
 	for rows.Next() {
 		t := note.NewTag()
 		err := rows.Scan(&t.ID, &t.Created, &t.Modified, &t.Name)

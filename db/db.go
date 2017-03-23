@@ -48,8 +48,8 @@ type DB interface {
 	LoadBook(b *note.Book) error
 	DeleteBook(bk *note.Book) error
 
-	GetAllBookTags(bk *note.Book) ([]*note.Tag, error)
-	GetAllTags() ([]*note.Tag, error)
+	GetAllBookTags(bk *note.Book) (note.Tags, error)
+	GetAllTags() (note.Tags, error)
 	CreateTag(t *note.Tag) error
 	LoadNoteTags(n *note.Note) error
 	GetOrCreateTagByName(name string) (*note.Tag, error)
