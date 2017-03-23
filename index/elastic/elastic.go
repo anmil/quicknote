@@ -108,7 +108,7 @@ func (b *Index) IndexNote(n *note.Note) error {
 }
 
 // IndexNotes creates or updates a list of notes in ElasticSearch index
-func (b *Index) IndexNotes(notes []*note.Note) error {
+func (b *Index) IndexNotes(notes note.Notes) error {
 	for _, n := range notes {
 		b.IndexNote(n)
 	}

@@ -57,7 +57,7 @@ func (d *Database) GetNoteByID(id int64) (*note.Note, error) {
 }
 
 // GetAllNotesByIDs returns all notes for the given Notebook
-func (d *Database) GetAllNotesByIDs(ids []int64) ([]*note.Note, error) {
+func (d *Database) GetAllNotesByIDs(ids []int64) (note.Notes, error) {
 	sqlStr := `SELECT id, created, modified, bk_id, type, title, body FROM notes WHERE id IN (%s);`
 
 	// SQLite has a limit on the number of wild cards that can be given. We must split the query across multiple
@@ -67,7 +67,7 @@ func (d *Database) GetAllNotesByIDs(ids []int64) ([]*note.Note, error) {
 		return nil, err
 	}
 
-	notes := make([]*note.Note, 0, len(ids))
+	notes := make(note.Notes, 0, len(ids))
 	for _, c := range chucks {
 		cids := c.([]int64)
 
@@ -103,7 +103,7 @@ func (d *Database) GetAllNotesByIDs(ids []int64) ([]*note.Note, error) {
 }
 
 // GetAllBookNotes returns all notes for the given Notebook
-func (d *Database) GetAllBookNotes(book *note.Book, sortBy, order string) ([]*note.Note, error) {
+func (d *Database) GetAllBookNotes(book *note.Book, sortBy, order string) (note.Notes, error) {
 	sqlStr := `SELECT id, created, modified, bk_id, type, title, body FROM notes WHERE bk_id = $1 ORDER BY %s %s;`
 
 	// This would normally be a really bad idea (sql injection anyone?). But sortBy and order are taking
@@ -130,7 +130,7 @@ func (d *Database) GetAllBookNotes(book *note.Book, sortBy, order string) ([]*no
 }
 
 // GetAllNotes returns all notes
-func (d *Database) GetAllNotes(sortBy, order string) ([]*note.Note, error) {
+func (d *Database) GetAllNotes(sortBy, order string) (note.Notes, error) {
 	sqlStr := `SELECT id, created, modified, bk_id, type, title, body FROM notes ORDER BY %s %s;`
 
 	// See GetAllBookNotes for why I'm doing this
@@ -269,9 +269,9 @@ func (d *Database) DeleteNote(n *note.Note) error {
 	return nil
 }
 
-func (d *Database) loadNotesFromRows(rows *sql.Rows) ([]*note.Note, error) {
+func (d *Database) loadNotesFromRows(rows *sql.Rows) (note.Notes, error) {
 	books := make(map[int64]*note.Book)
-	notes := make([]*note.Note, 0)
+	notes := make(note.Notes, 0)
 
 	for rows.Next() {
 		var bkID int64

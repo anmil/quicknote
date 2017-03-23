@@ -112,7 +112,7 @@ func TestDeleteNoteSQLiteUnit(t *testing.T) {
 	}
 }
 
-func saveNotes(t *testing.T, db *Database, notes []*note.Note) {
+func saveNotes(t *testing.T, db *Database, notes note.Notes) {
 	for _, n := range notes {
 		saveNote(t, db, n)
 	}
@@ -154,7 +154,7 @@ func getNoteByID(t *testing.T, db *Database, n *note.Note) {
 	}
 }
 
-func getNotesByID(t *testing.T, db *Database, notes []*note.Note) {
+func getNotesByID(t *testing.T, db *Database, notes note.Notes) {
 	var ids []int64
 	for _, n := range notes {
 		ids = append(ids, n.ID)
@@ -172,7 +172,7 @@ func getNotesByID(t *testing.T, db *Database, notes []*note.Note) {
 	}
 }
 
-func getNotesByBook(t *testing.T, db *Database, notes []*note.Note) {
+func getNotesByBook(t *testing.T, db *Database, notes note.Notes) {
 	if nn, err := db.GetAllBookNotes(notes[0].Book, "modified", "asc"); err != nil {
 		t.Fatal(err)
 	} else if len(nn) != len(notes) {
@@ -185,7 +185,7 @@ func getNotesByBook(t *testing.T, db *Database, notes []*note.Note) {
 	}
 }
 
-func getNotesAll(t *testing.T, db *Database, notes []*note.Note) {
+func getNotesAll(t *testing.T, db *Database, notes note.Notes) {
 	if nn, err := db.GetAllNotes("modified", "asc"); err != nil {
 		t.Fatal(err)
 	} else if len(nn) != len(notes) {

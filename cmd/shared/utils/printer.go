@@ -69,7 +69,7 @@ var (
 )
 
 // PrintNotes prints notes in the given format
-func PrintNotes(notes []*note.Note, format string) error {
+func PrintNotes(notes note.Notes, format string) error {
 	var err error
 	switch format {
 	case "ids":
@@ -96,7 +96,7 @@ func PrintNoteColored(notes *note.Note, titleOnly bool) {
 }
 
 // PrintNotesColored prints the list of Notes to stdout in color
-func PrintNotesColored(notes []*note.Note, titleOnly bool) {
+func PrintNotesColored(notes note.Notes, titleOnly bool) {
 	if titleOnly {
 		printNotesTitleOnly(notes)
 	} else {
@@ -104,7 +104,7 @@ func PrintNotesColored(notes []*note.Note, titleOnly bool) {
 	}
 }
 
-func printNotesTitleOnly(notes []*note.Note) {
+func printNotesTitleOnly(notes note.Notes) {
 	for _, n := range notes {
 		printNoteTitleOnly(n)
 	}
@@ -117,7 +117,7 @@ func printNoteTitleOnly(n *note.Note) {
 	fmt.Println(n.Title)
 }
 
-func printDetailedNotes(notes []*note.Note) {
+func printDetailedNotes(notes note.Notes) {
 	nLen := len(notes)
 	for idx, n := range notes {
 		printDetailedNoteColored(n)
@@ -165,14 +165,14 @@ func colorTags(tags []*note.Tag) []string {
 }
 
 // PrintNotesIDs prints the Note's ids
-func PrintNotesIDs(notes []*note.Note) {
+func PrintNotesIDs(notes note.Notes) {
 	for _, n := range notes {
 		fmt.Println(n.ID)
 	}
 }
 
 // PrintNotesCSV prints Notes in csv format
-func PrintNotesCSV(notes []*note.Note) error {
+func PrintNotesCSV(notes note.Notes) error {
 	w := csv.NewWriter(os.Stdout)
 	w.Write([]string{"id", "created", "modified", "type", "title", "body", "book", "tags"})
 
@@ -198,7 +198,7 @@ func PrintNotesCSV(notes []*note.Note) error {
 }
 
 // PrintNotesJSON prints Notes in json format
-func PrintNotesJSON(notes []*note.Note) error {
+func PrintNotesJSON(notes note.Notes) error {
 	b, err := json.Marshal(notes)
 	if err != nil {
 		return err

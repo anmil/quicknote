@@ -234,7 +234,7 @@ func (b *Index) IndexNote(n *note.Note) error {
 }
 
 // IndexNotes creates or updates a list of notes in Bleve index
-func (b *Index) IndexNotes(notes []*note.Note) error {
+func (b *Index) IndexNotes(notes note.Notes) error {
 	var wg sync.WaitGroup
 	var batchSize int64
 

@@ -1,5 +1,3 @@
-// +build integration
-
 // Quicknote stores and searches tens of thousands of short notes.
 //
 // Copyright (C) 2017  Andrew Miller <amiller@amilx.com>

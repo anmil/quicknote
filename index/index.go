@@ -32,7 +32,7 @@ var ErrProviderNotSupported = errors.New("Unsupported provider given")
 // Index interface for the index providers
 type Index interface {
 	IndexNote(n *note.Note) error
-	IndexNotes(notes []*note.Note) error
+	IndexNotes(notes note.Notes) error
 	SearchNote(query string, limit, offset int) ([]int64, uint64, error)
 	SearchNotePhrase(query string, bk *note.Book, sort string, limit, offset int) ([]int64, uint64, error)
 	DeleteNote(n *note.Note) error
