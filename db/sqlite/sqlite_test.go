@@ -37,22 +37,7 @@ var tableNames = []string{
 var tempDir = path.Join(os.TempDir(), "qnote-db")
 
 func openDatabase(t *testing.T) *Database {
-	// Ensure there is no left overs
-	if err := os.MkdirAll(tempDir, 0700); err != nil {
-		t.Fatal(err)
-	}
-
-	file := path.Join(tempDir, "qnote.db")
-	if _, err := os.Stat(file); err == nil {
-		if err := os.Remove(file); err != nil {
-			t.Fatal(err)
-		}
-	}
-
-	// Would be nice to be able to use a memory only db. Due, to
-	// the way Go sql.DB does its connection pool we can not.
-	// https://groups.google.com/forum/#!msg/golang-nuts/AYZl1lNxCfA/LOr30uKy7-oJ
-	db, err := NewDatabase(file)
+	db, err := NewDatabase("file::memory:?cache=shared")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -63,9 +48,6 @@ func openDatabase(t *testing.T) *Database {
 func closeDatabase(db *Database, t *testing.T) {
 	if err := db.Close(); err != nil {
 		t.Error(err)
-	}
-	if err := os.Remove(db.DBPath); err != nil {
-		t.Fatal(err)
 	}
 }
 
