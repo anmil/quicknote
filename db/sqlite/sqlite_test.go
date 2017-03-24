@@ -18,8 +18,6 @@
 package sqlite
 
 import (
-	"os"
-	"path"
 	"testing"
 
 	"github.com/anmil/quicknote/test"
@@ -33,8 +31,6 @@ var tableNames = []string{
 	"sqlite_sequence",
 	"tags",
 }
-
-var tempDir = path.Join(os.TempDir(), "qnote-db")
 
 func openDatabase(t *testing.T) *Database {
 	db, err := NewDatabase("file::memory:?cache=shared")
