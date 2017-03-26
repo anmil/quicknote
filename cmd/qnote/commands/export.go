@@ -25,7 +25,7 @@ import (
 	"time"
 
 	"github.com/anmil/quicknote/cmd/shared/encoding"
-	"github.com/anmil/td/utils"
+	"github.com/anmil/quicknote/cmd/shared/utils"
 
 	"github.com/spf13/cobra"
 )
