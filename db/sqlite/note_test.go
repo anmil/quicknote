@@ -42,6 +42,7 @@ func TestGetNoteSQLiteUnit(t *testing.T) {
 	saveNotes(t, db, notes)
 
 	getNoteByID(t, db, notes[0])
+	getNoteByNote(t, db, notes[0])
 	getNotesByID(t, db, notes)
 	getNotesByBook(t, db, notes)
 	getNotesAll(t, db, notes)
@@ -151,6 +152,25 @@ func getNoteByID(t *testing.T, db *Database, n *note.Note) {
 		t.Fatalf("Expected note with ID %d, got %d", n.ID, nn.ID)
 	} else {
 		test.CheckTags(t, nn.Tags, n.Tags)
+	}
+}
+
+func getNoteByNote(t *testing.T, db *Database, n *note.Note) {
+	nn := note.NewNote()
+	nn.Book = n.Book
+	nn.Type = n.Type
+	nn.Title = n.Title
+	nn.Body = n.Body
+	if err := db.GetNoteByNote(nn); err != nil {
+		t.Fatal(err)
+	} else if nn == nil {
+		t.Fatal("Expected 1 note, got nil")
+	} else if nn.ID != n.ID {
+		t.Fatalf("Expected note with ID %d, got %d", n.ID, nn.ID)
+	} else if !nn.Created.Equal(n.Created) {
+		t.Fatalf("Expected note with Created %s, got %s", n.Created, nn.Created)
+	} else if !nn.Modified.Equal(n.Modified) {
+		t.Fatalf("Expected note with Modified %s, got %s", n.Modified, nn.Modified)
 	}
 }
 

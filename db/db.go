@@ -33,6 +33,7 @@ type DB interface {
 	GetAllNotes(sortBy, order string) (note.Notes, error)
 	GetAllBookNotes(book *note.Book, sortBy, order string) (note.Notes, error)
 	GetNoteByID(id int64) (*note.Note, error)
+	GetNoteByNote(n *note.Note) error
 	GetAllNotesByIDs(ids []int64) (note.Notes, error)
 	CreateNote(n *note.Note) error
 	EditNote(n *note.Note) error

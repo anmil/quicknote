@@ -29,9 +29,9 @@ import (
 
 var notesJSON = `[
   {
-    "id": 600,
-    "created": "2017-03-20T10:12:42.783947469-04:00",
-    "modified": "2017-03-20T10:12:42.783947542-04:00",
+    "id": 603,
+    "created": "2017-03-25T21:35:27.287881752-04:00",
+    "modified": "2017-03-25T21:35:27.287881829-04:00",
     "type": "basic",
     "title": "This is test 1 of the basic parser",
     "body": "#basic #test #parser\n\nLorem ipsum dolor sit amet, consectetur adipiscing elit.\nNulla tincidunt diam eu purus laoreet condimentum. Duis\ntempus, turpis vitae varius ullamcorper, sapien erat\ncursus lacus, et lacinia ligula dolor quis nibh.",
@@ -43,9 +43,9 @@ var notesJSON = `[
     ]
   },
   {
-    "id": 601,
-    "created": "2017-03-20T10:12:52.608585309-04:00",
-    "modified": "2017-03-20T10:12:52.608585472-04:00",
+    "id": 604,
+    "created": "2017-03-25T21:35:27.293783239-04:00",
+    "modified": "2017-03-25T21:35:27.29378334-04:00",
     "type": "basic",
     "title": "This is #test 2 of the #basic #parser",
     "body": "Lorem ipsum dolor sit amet, consectetur adipiscing elit.\nNulla tincidunt diam eu purus laoreet condimentum. Duis\ntempus, turpis vitae varius ullamcorper, sapien erat\ncursus lacus, et lacinia ligula dolor quis nibh.",
@@ -57,9 +57,9 @@ var notesJSON = `[
     ]
   },
   {
-    "id": 602,
-    "created": "2017-03-20T10:25:30.570182485-04:00",
-    "modified": "2017-03-20T10:25:30.570182563-04:00",
+    "id": 605,
+    "created": "2017-03-25T21:35:27.305349683-04:00",
+    "modified": "2017-03-25T21:35:27.305349813-04:00",
     "type": "basic",
     "title": "This is #test 2 of the #basic #parser",
     "body": "Lorem ipsum dolor sit amet, consectetur adipiscing elit.\nNulla tincidunt diam eu purus laoreet condimentum. Duis\ntempus, turpis vitae varius ullamcorper, sapien erat\ncursus lacus, et lacinia ligula dolor #quis nibh.#",
@@ -90,7 +90,11 @@ func init() {
 }
 
 func GetTestNotes() note.Notes {
-	reader := strings.NewReader(notesJSON)
+	return GetTestNotesCust(notesJSON)
+}
+
+func GetTestNotesCust(s string) note.Notes {
+	reader := strings.NewReader(s)
 	dec := json.NewDecoder(reader)
 
 	jsonNotes := make([]*JsonNote, 0)

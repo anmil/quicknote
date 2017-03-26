@@ -31,15 +31,15 @@ import (
 var schema = `
 CREATE TABLE IF NOT EXISTS books (
 	id       SERIAL   PRIMARY KEY,
-	created  TIMESTAMP NOT NULL,
-	modified TIMESTAMP NOT NULL,
+	created  TIMESTAMPTZ NOT NULL,
+	modified TIMESTAMPTZ NOT NULL,
 	name     TEXT UNIQUE
 );
 
 CREATE TABLE IF NOT EXISTS notes (
 	id       SERIAL   PRIMARY KEY,
-	created  TIMESTAMP NOT NULL,
-	modified TIMESTAMP NOT NULL,
+	created  TIMESTAMPTZ NOT NULL,
+	modified TIMESTAMPTZ NOT NULL,
 	bk_id    INTEGER   NOT NULL REFERENCES books(id) ON DELETE CASCADE,
 	type     TEXT      NOT NULL,
 	title    TEXT,
@@ -47,11 +47,12 @@ CREATE TABLE IF NOT EXISTS notes (
 );
 
 CREATE INDEX IF NOT EXISTS idx_notes_bk_id ON notes (bk_id);
+CREATE INDEX IF NOT EXISTS idx_notes_bk_type_title_body ON notes (bk_id, type, title, body);
 
 CREATE TABLE IF NOT EXISTS tags (
 	id       SERIAL   PRIMARY KEY,
-	created  TIMESTAMP NOT NULL,
-	modified TIMESTAMP NOT NULL,
+	created  TIMESTAMPTZ NOT NULL,
+	modified TIMESTAMPTZ NOT NULL,
 	name     TEXT UNIQUE
 );
 

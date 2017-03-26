@@ -55,6 +55,7 @@ CREATE INDEX IF NOT EXISTS index_notes_type ON notes (type);
 CREATE INDEX IF NOT EXISTS index_notes_created ON notes (created);
 CREATE INDEX IF NOT EXISTS index_notes_bk_created ON notes (bk_id, created);
 CREATE INDEX IF NOT EXISTS index_notes_type_created ON notes (type, created);
+CREATE INDEX IF NOT EXISTS index_notes_bk_type_title_body ON notes (bk_id, type, title, body);
 
 CREATE TABLE IF NOT EXISTS tags (
 	id       INTEGER   PRIMARY KEY AUTOINCREMENT,

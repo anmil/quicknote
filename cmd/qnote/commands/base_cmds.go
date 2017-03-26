@@ -62,6 +62,8 @@ func init() {
 	RootCmd.AddCommand(EditCmd)
 	RootCmd.AddCommand(DeleteCmd)
 	RootCmd.AddCommand(SplitCmd)
+	RootCmd.AddCommand(ExportCmd)
+	RootCmd.AddCommand(ImportCmd)
 
 	viper.SetDefault("display_order", "asc")
 	viper.SetDefault("order_by", "modified")

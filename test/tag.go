@@ -18,8 +18,10 @@
 package test
 
 import (
+	"fmt"
 	"sort"
 	"testing"
+	"time"
 
 	"github.com/anmil/quicknote/note"
 )
@@ -33,6 +35,9 @@ func getTag(name string) *note.Tag {
 	}
 
 	t := note.NewTag()
+	t.ID = int64(len(noteTags) + 1)
+	t.Created = time.Now()
+	t.Modified = time.Now()
 	t.Name = name
 	noteTags[name] = t
 	AllTags = append(AllTags, t)
@@ -70,6 +75,7 @@ func TagSliceEq(a, b note.Tags) bool {
 	}
 	for i := range a {
 		if a[i].Name != b[i].Name {
+			fmt.Println("Tags:", a[i].Name, b[i].Name)
 			return false
 		}
 	}

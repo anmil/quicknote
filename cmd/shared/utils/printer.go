@@ -87,11 +87,11 @@ func PrintNotes(notes note.Notes, format string) error {
 }
 
 // PrintNoteColored prints the Note to stdout in color
-func PrintNoteColored(notes *note.Note, titleOnly bool) {
+func PrintNoteColored(n *note.Note, titleOnly bool) {
 	if titleOnly {
-		printNoteTitleOnly(notes)
+		printNoteTitleOnly(n)
 	} else {
-		printDetailedNoteColored(notes)
+		printDetailedNoteColored(n)
 	}
 }
 

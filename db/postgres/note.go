@@ -56,6 +56,25 @@ func (d *Database) GetNoteByID(id int64) (*note.Note, error) {
 	return n, nil
 }
 
+// GetNoteByNote Loads the note's ID, Created, and Modified fields
+func (d *Database) GetNoteByNote(n *note.Note) error {
+	sqlStr := `SELECT id, created, modified FROM notes WHERE bk_id = $1 AND type = $2 AND title = $3 AND body = $4;`
+
+	stmt, err := d.db.Prepare(sqlStr)
+	if err != nil {
+		return err
+	}
+	defer stmt.Close()
+
+	err = stmt.QueryRow(n.Book.ID, n.Type, n.Title, n.Body).
+		Scan(&n.ID, &n.Created, &n.Modified)
+	if err == sql.ErrNoRows {
+		return nil
+	}
+
+	return err
+}
+
 // GetAllNotesByIDs returns all notes for the given Notebook
 func (d *Database) GetAllNotesByIDs(ids []int64) (note.Notes, error) {
 	sqlStr := `SELECT id, created, modified, bk_id, type, title, body FROM notes WHERE id IN (%s);`

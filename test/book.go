@@ -20,6 +20,7 @@ package test
 import (
 	"sort"
 	"testing"
+	"time"
 
 	"github.com/anmil/quicknote/note"
 )
@@ -33,6 +34,9 @@ func getBook(name string) *note.Book {
 	}
 
 	bk := note.NewBook()
+	bk.ID = int64(len(noteBooks) + 1)
+	bk.Created = time.Now()
+	bk.Modified = time.Now()
 	bk.Name = name
 	noteBooks[name] = bk
 	AllBooks = append(AllBooks, bk)

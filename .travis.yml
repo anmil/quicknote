@@ -12,6 +12,7 @@ os:
 branches:
   only:
   - master
+  - dev
 
 matrix:
   fast_finish: true
@@ -20,4 +21,4 @@ install:
   - go get ./...
 
 script:
-  - go install github.com/anmil/quicknote/cmd/qnote
+  - go test -v ./...
