@@ -35,8 +35,8 @@ func TestNoteJSONUnit(t *testing.T) {
 
 	n := NewNote()
 	n.ID = 123456
-	n.Created = time.Unix(1490020989, 0)
-	n.Modified = time.Unix(1490020989, 0)
+	n.Created = time.Unix(1490020989, 0).UTC()
+	n.Modified = time.Unix(1490020989, 0).UTC()
 	n.Type = "basic"
 	n.Title = "Json Title Test"
 	n.Body = "Json body test"
@@ -50,9 +50,9 @@ func TestNoteJSONUnit(t *testing.T) {
 	}
 
 	results := string(b)
-	answer := `{"id":123456,"created":"2017-03-20T10:43:09-04:00","modified":"2017-03-20T10:43:09-04:00","type":"basic","title":"Json Title Test","body":"Json body test","book":"TestBook","tags":["tag1","tag2"]}`
+	answer := `{"id":123456,"created":"2017-03-20T14:43:09Z","modified":"2017-03-20T14:43:09Z","type":"basic","title":"Json Title Test","body":"Json body test","book":"TestBook","tags":["tag1","tag2"]}`
 
 	if results != answer {
-		t.Error("JSON strings do not match")
+		t.Error("JSON strings do not")
 	}
 }
