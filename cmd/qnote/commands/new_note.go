@@ -378,6 +378,10 @@ func createJNoteWorker(id int, wg *sync.WaitGroup, jnotes <-chan *jNote, results
 }
 
 func saveNote(n *note.Note) error {
+	if len(n.Title) > note.MaxStringLen || len(n.Body) > note.MaxStringLen {
+		return errors.New("Note body is over the maximum limit")
+	}
+
 	if err := dbConn.CreateNote(n); err != nil {
 		return err
 	}

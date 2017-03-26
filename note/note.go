@@ -35,6 +35,9 @@ var (
 	}
 )
 
+// Always a good idea to have a upper limit
+const MaxStringLen = 131070
+
 // Note is our main struct for storing
 // notes and their meta data.
 type Note struct {
@@ -74,6 +77,14 @@ func (n *Note) GetTagStringArray() []string {
 		tags = append(tags, tag.Name)
 	}
 	return tags
+}
+
+func (n *Note) GetTagIDsArray() []int64 {
+	ids := make([]int64, len(n.Tags))
+	for idx, tag := range n.Tags {
+		ids[idx] = tag.ID
+	}
+	return ids
 }
 
 // MarshalJSON customer json Marshaler
