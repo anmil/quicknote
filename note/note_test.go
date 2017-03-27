@@ -53,6 +53,6 @@ func TestNoteJSONUnit(t *testing.T) {
 	answer := `{"id":123456,"created":"2017-03-20T14:43:09Z","modified":"2017-03-20T14:43:09Z","type":"basic","title":"Json Title Test","body":"Json body test","book":"TestBook","tags":["tag1","tag2"]}`
 
 	if results != answer {
-		t.Error("JSON strings do not")
+		t.Error("JSON strings do not match")
 	}
 }
