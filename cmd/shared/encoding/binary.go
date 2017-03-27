@@ -17,6 +17,65 @@
 
 package encoding
 
+import (
+	"bytes"
+	"errors"
+	"io"
+	"time"
+
+	"github.com/anmil/quicknote/note"
+
+	"encoding/binary"
+)
+
+// ErrHeaderNotWritten indicates that the Header was not written before attempting
+// to write a record.
+var ErrHeaderNotWritten = errors.New("Header have not been written yet")
+
+// ErrHeaderNotParsed indicates that the Header was not read before attempting
+// to read a record
+var ErrHeaderNotParsed = errors.New("Header have not been parsed yet")
+
+// ErrInvalidRecordType indicates a invalid record was encountered. See RecordType
+// for a list of valid records types.
+var ErrInvalidRecordType = errors.New("Encountered an invalid record type")
+
+// ErrInvalidString indicates the parser encountered a string that does not
+// meets the requirements of Entity's field (such as a string was to long)
+var ErrInvalidString = errors.New("Encountered an invalid record string")
+
+// ErrInvalidOrCorruptedBinaryFormat indicates that parser encountered an problem
+// with the QNOT stream and is unable to continue.
+var ErrInvalidOrCorruptedBinaryFormat = errors.New("Invalid or corrupted binary")
+
+// ErrBookNoteFound indicates that the parser encountered a Note record that
+// referenced a Book the parse has not parsed yet.
+var ErrBookNoteFound = errors.New("Note how unknown book")
+
+// ErrTagNoteFound indicates that the parser encountered a Note record that
+// referenced a Tag the parse has not parsed yet.
+var ErrTagNoteFound = errors.New("Note how unknown tag")
+
+// MagicStr binary magic string
+var MagicStr = "QNOT"
+
+// CurrentVersion the current format version used for encoding and decoding
+var CurrentVersion uint32 = 1
+
+// HeaderLen length of the header block
+var HeaderLen = 16
+
+// RecordType byte indicating the type of record
+type RecordType byte
+
+// List of record types
+var (
+	Book RecordType = 0
+	Tag  RecordType = 1
+	Note RecordType = 2
+)
+
+// BinaryEncoder encodes a Note into the QNOT format
 // Binary file exporter and importer
 //
 // A QNOT file consists of a Header and one or more records. Every QNOT file must
@@ -93,66 +152,6 @@ package encoding
 // 	| 8 byte number of tags (uint64)         |
 // 	| 8 byte tag ID (uint64)                 | <- repeats for each tag
 //
-
-import (
-	"bytes"
-	"errors"
-	"io"
-	"time"
-
-	"github.com/anmil/quicknote/note"
-
-	"encoding/binary"
-)
-
-// ErrHeaderNotWritten indicates that the Header was not written before attempting
-// to write a record.
-var ErrHeaderNotWritten = errors.New("Header have not been written yet")
-
-// ErrHeaderNotParsed indicates that the Header was not read before attempting
-// to read a record
-var ErrHeaderNotParsed = errors.New("Header have not been parsed yet")
-
-// ErrInvalidRecordType indicates a invalid record was encountered. See RecordType
-// for a list of valid records types.
-var ErrInvalidRecordType = errors.New("Encountered an invalid record type")
-
-// ErrInvalidString indicates the parser encountered a string that does not
-// meets the requirements of Entity's field (such as a string was to long)
-var ErrInvalidString = errors.New("Encountered an invalid record string")
-
-// ErrInvalidOrCorruptedBinaryFormat indicates that parser encountered an problem
-// with the QNOT stream and is unable to continue.
-var ErrInvalidOrCorruptedBinaryFormat = errors.New("Invalid or corrupted binary")
-
-// ErrBookNoteFound indicates that the parser encountered a Note record that
-// referenced a Book the parse has not parsed yet.
-var ErrBookNoteFound = errors.New("Note how unknown book")
-
-// ErrTagNoteFound indicates that the parser encountered a Note record that
-// referenced a Tag the parse has not parsed yet.
-var ErrTagNoteFound = errors.New("Note how unknown tag")
-
-// MagicStr binary magic string
-var MagicStr = "QNOT"
-
-// CurrentVersion the current format version used for encoding and decoding
-var CurrentVersion uint32 = 1
-
-// HeaderLen length of the header block
-var HeaderLen = 16
-
-// RecordType byte indicating the type of record
-type RecordType byte
-
-// List of record types
-var (
-	Book RecordType = 0
-	Tag  RecordType = 1
-	Note RecordType = 2
-)
-
-// BinaryEncoder encodes a Note into the QNOT format
 type BinaryEncoder struct {
 	w io.Writer
 
