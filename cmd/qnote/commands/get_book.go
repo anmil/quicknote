@@ -30,7 +30,7 @@ func init() {
 // GetBookCmd List all books
 var GetBookCmd = &cobra.Command{
 	Use:     "book",
-	Aliases: []string{"books"},
+	Aliases: []string{"bk", "bks", "books"},
 	Short:   "List all books",
 	Run:     getBookCmdRun,
 }
