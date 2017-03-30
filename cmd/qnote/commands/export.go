@@ -19,6 +19,7 @@ package commands
 
 import (
 	"compress/gzip"
+	"fmt"
 	"io"
 	"os"
 	"path/filepath"
@@ -26,6 +27,7 @@ import (
 
 	"github.com/anmil/quicknote/cmd/shared/encoding"
 	"github.com/anmil/quicknote/cmd/shared/utils"
+	"github.com/anmil/quicknote/note"
 
 	"github.com/spf13/cobra"
 )
@@ -36,6 +38,8 @@ var (
 )
 
 func init() {
+	ExportCmd.AddCommand(ExportBookCmd)
+
 	ExportCmd.PersistentFlags().StringVarP(&outputFile, "out-file", "o", "", "Write to file instead of stdout")
 	ExportCmd.PersistentFlags().BoolVarP(&compressOutput, "compress", "c", false, "Compress output with gzip")
 }
@@ -63,23 +67,68 @@ func exportCmdRun(cmd *cobra.Command, args []string) {
 	notes, err := dbConn.GetAllNotes("created", "asc")
 	exitOnError(err)
 
-	var out io.Writer
-	out = os.Stdout
-
-	fp, fn, err := getFilePath(outputFile, compressOutput)
+	out, fn, file, err := getExportWriter()
 	exitOnError(err)
-
-	if len(outputFile) > 0 {
-		file, err := os.Create(fp)
-		exitOnError(err)
+	if file != nil {
 		defer file.Close()
-
-		out = file
 	}
 
-	if compressOutput {
+	err = exportNotes(notes, fn, out, compressOutput)
+	exitOnError(err)
+}
+
+// ExportBookCmd Export all Notes, Tags in book(s)
+var ExportBookCmd = &cobra.Command{
+	Use:   "book [flags] <book>...",
+	Short: "Export all Notes, Tags in book(s)",
+	Long: `Export all Notes, Tags in book(s) using the QNOT file format.
+
+See the help documentation for the export command for details
+
+	qnote help export
+
+`,
+	Run: exportBookCmdRun,
+}
+
+func exportBookCmdRun(cmd *cobra.Command, args []string) {
+	if len(args) == 0 {
+		exitValidationError("No books given", cmd)
+	}
+
+	var books note.Books
+	for _, bkName := range args {
+		bk, err := dbConn.GetBookByName(bkName)
+		exitOnError(err)
+		if bk == nil {
+			fmt.Printf("Book %s does not exists\n", bkName)
+			return
+		}
+
+		books = append(books, bk)
+	}
+
+	out, fn, file, err := getExportWriter()
+	exitOnError(err)
+	if file != nil {
+		defer file.Close()
+	}
+
+	var notes note.Notes
+	for _, bk := range books {
+		ns, err := dbConn.GetAllBookNotes(bk, "created", "asc")
+		exitOnError(err)
+		notes = append(notes, ns...)
+	}
+
+	err = exportNotes(notes, fn, out, compressOutput)
+	exitOnError(err)
+}
+
+func exportNotes(notes note.Notes, fileName string, out io.Writer, compressed bool) error {
+	if compressed {
 		zip := gzip.NewWriter(out)
-		zip.Name = fn
+		zip.Name = fileName
 		zip.Comment = "Exported notes form QuickNote Qnote"
 		zip.ModTime = time.Now()
 		defer zip.Close()
@@ -88,21 +137,47 @@ func exportCmdRun(cmd *cobra.Command, args []string) {
 	}
 
 	enc := encoding.NewBinaryEncoder(out)
-	_, err = enc.WriteHeader()
-	exitOnError(err)
+	if _, err := enc.WriteHeader(); err != nil {
+		return err
+	}
 
 	for _, n := range notes {
-		_, err = enc.WriteNote(n)
-		exitOnError(err)
+		if _, err := enc.WriteNote(n); err != nil {
+			return err
+		}
 	}
+
+	return nil
+}
+
+func getExportWriter() (io.Writer, string, *os.File, error) {
+	var out io.Writer
+	out = os.Stdout
+
+	fp, fn, err := getFilePath(outputFile, compressOutput)
+	if err != nil {
+		return nil, "", nil, err
+	}
+
+	var file *os.File
+	if len(outputFile) > 0 {
+		file, err = os.Create(fp)
+		if err != nil {
+			return nil, "", nil, err
+		}
+		out = file
+	}
+
+	return out, fn, file, nil
 }
 
 func getFilePath(outputFile string, compressed bool) (string, string, error) {
 	fp := "notes.qnot"
 	fn := fp
 
+	var err error
 	if len(outputFile) > 0 {
-		fp, err := utils.ExpandFilePath(outputFile)
+		fp, err = utils.ExpandFilePath(outputFile)
 		if err != nil {
 			return "", "", err
 		}
