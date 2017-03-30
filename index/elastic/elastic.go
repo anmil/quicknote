@@ -18,13 +18,13 @@
 package elastic
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"strconv"
 
 	"github.com/anmil/quicknote/note"
 
-	"golang.org/x/net/context"
 	elastic "gopkg.in/olivere/elastic.v5"
 )
 
