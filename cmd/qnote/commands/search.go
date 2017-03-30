@@ -56,7 +56,7 @@ func init() {
 
 // SearchCmd Search notes
 var SearchCmd = &cobra.Command{
-	Use:   "search <query>",
+	Use:   "search [flags] <query>",
 	Short: "Search notes",
 	Long: `Search all notes in the working Book (see '-n').
 
