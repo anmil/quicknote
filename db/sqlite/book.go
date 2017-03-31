@@ -22,11 +22,11 @@ import (
 	"errors"
 	"time"
 
-	"github.com/anmil/quicknote/note"
+	"github.com/anmil/quicknote"
 )
 
 // GetAllBooks returns all Books
-func (d *Database) GetAllBooks() (note.Books, error) {
+func (d *Database) GetAllBooks() (quicknote.Books, error) {
 	d.mux.Lock()
 	defer d.mux.Unlock()
 
@@ -38,9 +38,9 @@ func (d *Database) GetAllBooks() (note.Books, error) {
 	}
 	defer rows.Close()
 
-	books := make(note.Books, 0)
+	books := make(quicknote.Books, 0)
 	for rows.Next() {
-		b := note.NewBook()
+		b := quicknote.NewBook()
 		err := rows.Scan(&b.ID, &b.Created, &b.Modified, &b.Name)
 		if err != nil {
 			return nil, err
@@ -54,7 +54,7 @@ func (d *Database) GetAllBooks() (note.Books, error) {
 }
 
 // GetOrCreateBookByName gets the Book by name creating it if it does not exists
-func (d *Database) GetOrCreateBookByName(name string) (*note.Book, error) {
+func (d *Database) GetOrCreateBookByName(name string) (*quicknote.Book, error) {
 	if b := d.getFromBookCache(name); b != nil {
 		return b, nil
 	}
@@ -68,7 +68,7 @@ func (d *Database) GetOrCreateBookByName(name string) (*note.Book, error) {
 		return nil, err
 	}
 	if bk == nil {
-		bk = &note.Book{
+		bk = &quicknote.Book{
 			Created:  time.Now(),
 			Modified: time.Now(),
 			Name:     name,
@@ -85,7 +85,7 @@ func (d *Database) GetOrCreateBookByName(name string) (*note.Book, error) {
 }
 
 // GetBookByName returns the Book for the given name
-func (d *Database) GetBookByName(name string) (*note.Book, error) {
+func (d *Database) GetBookByName(name string) (*quicknote.Book, error) {
 	d.mux.Lock()
 	defer d.mux.Unlock()
 
@@ -101,7 +101,7 @@ func (d *Database) GetBookByName(name string) (*note.Book, error) {
 	}
 	defer stmt.Close()
 
-	b := note.NewBook()
+	b := quicknote.NewBook()
 	err = stmt.QueryRow(name).Scan(&b.ID, &b.Created, &b.Modified, &b.Name)
 	if err == sql.ErrNoRows {
 		return nil, nil
@@ -115,13 +115,13 @@ func (d *Database) GetBookByName(name string) (*note.Book, error) {
 }
 
 // LoadBook loads the Note's Book
-func (d *Database) LoadBook(b *note.Book) error {
+func (d *Database) LoadBook(b *quicknote.Book) error {
 	d.mux.Lock()
 	defer d.mux.Unlock()
 	return d.loadBook(b)
 }
 
-func (d *Database) loadBook(b *note.Book) error {
+func (d *Database) loadBook(b *quicknote.Book) error {
 	sqlStr := "SELECT created, modified, name FROM books WHERE id = ?;"
 
 	stmt, err := d.db.Prepare(sqlStr)
@@ -138,7 +138,7 @@ func (d *Database) loadBook(b *note.Book) error {
 }
 
 // CreateBook saves the Book to the database
-func (d *Database) CreateBook(b *note.Book) error {
+func (d *Database) CreateBook(b *quicknote.Book) error {
 	d.mux.Lock()
 	defer d.mux.Unlock()
 
@@ -167,7 +167,7 @@ func (d *Database) CreateBook(b *note.Book) error {
 }
 
 // MergeBooks merge all notes from Book b1 into Book b2
-func (d *Database) MergeBooks(b1 *note.Book, b2 *note.Book) error {
+func (d *Database) MergeBooks(b1 *quicknote.Book, b2 *quicknote.Book) error {
 	d.mux.Lock()
 	defer d.mux.Unlock()
 
@@ -223,7 +223,7 @@ func (d *Database) MergeBooks(b1 *note.Book, b2 *note.Book) error {
 }
 
 // EditBook change the book name
-func (d *Database) EditBook(b *note.Book) error {
+func (d *Database) EditBook(b *quicknote.Book) error {
 	d.mux.Lock()
 	defer d.mux.Unlock()
 
@@ -247,7 +247,7 @@ func (d *Database) EditBook(b *note.Book) error {
 }
 
 // DeleteBook deletes the Book from the database
-func (d *Database) DeleteBook(bk *note.Book) error {
+func (d *Database) DeleteBook(bk *quicknote.Book) error {
 	d.mux.Lock()
 	defer d.mux.Unlock()
 
@@ -268,11 +268,11 @@ func (d *Database) DeleteBook(bk *note.Book) error {
 	return nil
 }
 
-func (d *Database) addBookToCache(bk *note.Book) {
+func (d *Database) addBookToCache(bk *quicknote.Book) {
 	d.bookNameCache[bk.Name] = bk
 }
 
-func (d *Database) delBookFromCache(bk *note.Book) {
+func (d *Database) delBookFromCache(bk *quicknote.Book) {
 	delete(d.bookNameCache, bk.Name)
 }
 
@@ -280,7 +280,7 @@ func (d *Database) delBookFromCacheS(name string) {
 	delete(d.bookNameCache, name)
 }
 
-func (d *Database) getFromBookCache(name string) *note.Book {
+func (d *Database) getFromBookCache(name string) *quicknote.Book {
 	if bk, found := d.bookNameCache[name]; found {
 		return bk
 	}

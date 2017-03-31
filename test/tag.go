@@ -23,18 +23,18 @@ import (
 	"testing"
 	"time"
 
-	"github.com/anmil/quicknote/note"
+	"github.com/anmil/quicknote"
 )
 
-var AllTags note.Tags
-var noteTags map[string]*note.Tag
+var AllTags quicknote.Tags
+var noteTags map[string]*quicknote.Tag
 
-func getTag(name string) *note.Tag {
+func getTag(name string) *quicknote.Tag {
 	if t, found := noteTags[name]; found {
 		return t
 	}
 
-	t := note.NewTag()
+	t := quicknote.NewTag()
 	t.ID = int64(len(noteTags) + 1)
 	t.Created = time.Now()
 	t.Modified = time.Now()
@@ -45,14 +45,14 @@ func getTag(name string) *note.Tag {
 	return t
 }
 
-func CheckTags(t *testing.T, tag1, tag2 note.Tags) {
-	nnTags := note.Tags{}
+func CheckTags(t *testing.T, tag1, tag2 quicknote.Tags) {
+	nnTags := quicknote.Tags{}
 	for _, t := range tag1 {
 		nnTags = append(nnTags, t)
 	}
 	sort.Sort(nnTags)
 
-	nTags := note.Tags{}
+	nTags := quicknote.Tags{}
 	for _, t := range tag2 {
 		nTags = append(nTags, t)
 	}
@@ -63,7 +63,7 @@ func CheckTags(t *testing.T, tag1, tag2 note.Tags) {
 	}
 }
 
-func TagSliceEq(a, b note.Tags) bool {
+func TagSliceEq(a, b quicknote.Tags) bool {
 	if a == nil && b == nil {
 		return true
 	}

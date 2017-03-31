@@ -21,7 +21,8 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/anmil/quicknote/note"
+	"github.com/anmil/quicknote"
+
 	"github.com/spf13/cobra"
 )
 
@@ -54,7 +55,7 @@ func deleteNoteCmdRun(cmd *cobra.Command, args []string) {
 	}
 }
 
-func deleteNote(n *note.Note) {
+func deleteNote(n *quicknote.Note) {
 	if n == nil {
 		return
 	}

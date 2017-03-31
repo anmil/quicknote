@@ -20,7 +20,7 @@ package postgres
 import (
 	"testing"
 
-	"github.com/anmil/quicknote/note"
+	"github.com/anmil/quicknote"
 	"github.com/anmil/quicknote/test"
 )
 
@@ -32,7 +32,7 @@ func TestCreateBookPostgresIntegration(t *testing.T) {
 	db := openDatabase(t)
 	defer closeDatabase(db, t)
 
-	bk1 := note.NewBook()
+	bk1 := quicknote.NewBook()
 	bk1.Name = "NewBook"
 
 	if err := db.CreateBook(bk1); err != nil {
@@ -48,14 +48,14 @@ func TestLoadBookPostgresIntegration(t *testing.T) {
 	db := openDatabase(t)
 	defer closeDatabase(db, t)
 
-	bk1 := note.NewBook()
+	bk1 := quicknote.NewBook()
 	bk1.Name = "NewBook"
 
 	if err := db.CreateBook(bk1); err != nil {
 		t.Fatal(err)
 	}
 
-	bk2 := note.NewBook()
+	bk2 := quicknote.NewBook()
 	bk2.ID = bk1.ID
 
 	if err := db.LoadBook(bk2); err != nil {
@@ -73,7 +73,7 @@ func TestEditBookPostgresIntegration(t *testing.T) {
 	db := openDatabase(t)
 	defer closeDatabase(db, t)
 
-	bk1 := note.NewBook()
+	bk1 := quicknote.NewBook()
 	bk1.Name = "NewBook"
 
 	if err := db.CreateBook(bk1); err != nil {
@@ -165,7 +165,7 @@ func TestMergeBookPostgresIntegration(t *testing.T) {
 	notes := test.GetTestNotes()
 	saveNotes(t, db, notes)
 
-	bk1 := note.NewBook()
+	bk1 := quicknote.NewBook()
 	bk1.Name = "NewBook"
 
 	if err := db.CreateBook(bk1); err != nil {
@@ -191,7 +191,7 @@ func TestDeleteBookPostgresIntegration(t *testing.T) {
 	db := openDatabase(t)
 	defer closeDatabase(db, t)
 
-	bk1 := note.NewBook()
+	bk1 := quicknote.NewBook()
 	bk1.Name = "NewBook"
 
 	if err := db.CreateBook(bk1); err != nil {

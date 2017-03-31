@@ -22,18 +22,18 @@ import (
 	"testing"
 	"time"
 
-	"github.com/anmil/quicknote/note"
+	"github.com/anmil/quicknote"
 )
 
-var AllBooks note.Books
-var noteBooks map[string]*note.Book
+var AllBooks quicknote.Books
+var noteBooks map[string]*quicknote.Book
 
-func getBook(name string) *note.Book {
+func getBook(name string) *quicknote.Book {
 	if bk, found := noteBooks[name]; found {
 		return bk
 	}
 
-	bk := note.NewBook()
+	bk := quicknote.NewBook()
 	bk.ID = int64(len(noteBooks) + 1)
 	bk.Created = time.Now()
 	bk.Modified = time.Now()
@@ -44,14 +44,14 @@ func getBook(name string) *note.Book {
 	return bk
 }
 
-func CheckBooks(t *testing.T, bks1, bks2 note.Books) {
-	nnBks := note.Books{}
+func CheckBooks(t *testing.T, bks1, bks2 quicknote.Books) {
+	nnBks := quicknote.Books{}
 	for _, t := range bks1 {
 		nnBks = append(nnBks, t)
 	}
 	sort.Sort(nnBks)
 
-	nBks := note.Books{}
+	nBks := quicknote.Books{}
 	for _, t := range bks2 {
 		nBks = append(nBks, t)
 	}
@@ -62,7 +62,7 @@ func CheckBooks(t *testing.T, bks1, bks2 note.Books) {
 	}
 }
 
-func BookSliceEq(a, b note.Books) bool {
+func BookSliceEq(a, b quicknote.Books) bool {
 	if a == nil && b == nil {
 		return true
 	}

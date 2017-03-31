@@ -28,8 +28,8 @@ import (
 	"time"
 
 	"github.com/PuerkitoBio/goquery"
+	"github.com/anmil/quicknote"
 	"github.com/anmil/quicknote/cmd/shared/utils"
-	"github.com/anmil/quicknote/note"
 	"github.com/anmil/quicknote/parser"
 	"github.com/spf13/cobra"
 )
@@ -57,7 +57,7 @@ func init() {
 	NewCmd.AddCommand(NewNoteFromJSONCmd)
 
 	NewNoteCmd.Flags().StringVarP(&noteType, "note-type", "t", "basic",
-		fmt.Sprintf("The new Note's type [%s]", strings.Join(note.NoteTypes, ", ")))
+		fmt.Sprintf("The new Note's type [%s]", strings.Join(quicknote.NoteTypes, ", ")))
 }
 
 // NewNoteCmd Create a new basic note
@@ -77,16 +77,16 @@ func newNoteCmdRun(cmd *cobra.Command, args []string) {
 	validateNewNoteFlags(cmd)
 
 	switch noteType {
-	case note.URL:
+	case quicknote.URL:
 		newURLNoteCmdRun(cmd, args)
 	default:
-		editorText := fmt.Sprintf(editorDocMessage, "", workingNotebook.Name, note.Basic)
-		createNewNote(editorText, note.Basic)
+		editorText := fmt.Sprintf(editorDocMessage, "", workingNotebook.Name, quicknote.Basic)
+		createNewNote(editorText, quicknote.Basic)
 	}
 }
 
 func validateNewNoteFlags(cmd *cobra.Command) {
-	if !utils.InSliceString(noteType, note.NoteTypes) {
+	if !utils.InSliceString(noteType, quicknote.NoteTypes) {
 		exitValidationError("invalid note type", cmd)
 	}
 }
@@ -115,8 +115,8 @@ func newURLNoteCmdRun(cmd *cobra.Command, args []string) {
 
 	url := args[0]
 	text := getURLMetaNote(url)
-	editorText := fmt.Sprintf(editorDocMessage, text, workingNotebook.Name, note.URL)
-	createNewNote(editorText, note.URL)
+	editorText := fmt.Sprintf(editorDocMessage, text, workingNotebook.Name, quicknote.URL)
+	createNewNote(editorText, quicknote.URL)
 }
 
 func getURLMetaNote(url string) string {
@@ -198,18 +198,18 @@ func createNewNote(text string, typ string) {
 		return
 	}
 
-	p, err := parser.NewParser(note.Basic)
+	p, err := parser.NewParser(quicknote.Basic)
 	exitOnError(err)
 	p.Parse(noteText)
 
-	tags := make(note.Tags, 0, len(p.Tags()))
+	tags := make(quicknote.Tags, 0, len(p.Tags()))
 	for _, t := range p.Tags() {
 		tag, err := dbConn.GetOrCreateTagByName(t)
 		exitOnError(err)
 		tags = append(tags, tag)
 	}
 
-	n := &note.Note{
+	n := &quicknote.Note{
 		Created:  time.Now(),
 		Modified: time.Now(),
 		Book:     workingNotebook,
@@ -268,7 +268,7 @@ JSON must be in the format
 If the book does not exists, it will be created
 
 If <json> is note given, qnote will read from stdin
-`, strings.Join(note.NoteTypes, ", ")),
+`, strings.Join(quicknote.NoteTypes, ", ")),
 	Run: newNoteFromJSONCmdRun,
 }
 
@@ -334,7 +334,7 @@ func createJNoteWorker(id int, wg *sync.WaitGroup, jnotes <-chan *jNote, results
 	defer wg.Done()
 
 	for jn := range jnotes {
-		if !utils.InSliceString(jn.Type, note.NoteTypes) {
+		if !utils.InSliceString(jn.Type, quicknote.NoteTypes) {
 			results <- errors.New("Invalid type")
 			continue
 		}
@@ -345,7 +345,7 @@ func createJNoteWorker(id int, wg *sync.WaitGroup, jnotes <-chan *jNote, results
 			continue
 		}
 
-		tags := make(note.Tags, 0, len(jn.Tags))
+		tags := make(quicknote.Tags, 0, len(jn.Tags))
 		for _, t := range jn.Tags {
 			tag, err := dbConn.GetOrCreateTagByName(t)
 			if err != nil {
@@ -355,7 +355,7 @@ func createJNoteWorker(id int, wg *sync.WaitGroup, jnotes <-chan *jNote, results
 			tags = append(tags, tag)
 		}
 
-		n := &note.Note{
+		n := &quicknote.Note{
 			Created:  time.Now(),
 			Modified: time.Now(),
 			Book:     book,
@@ -377,8 +377,8 @@ func createJNoteWorker(id int, wg *sync.WaitGroup, jnotes <-chan *jNote, results
 	}
 }
 
-func saveNote(n *note.Note) error {
-	if len(n.Title) > note.MaxStringLen || len(n.Body) > note.MaxStringLen {
+func saveNote(n *quicknote.Note) error {
+	if len(n.Title) > quicknote.MaxStringLen || len(n.Body) > quicknote.MaxStringLen {
 		return errors.New("Note body is over the maximum limit")
 	}
 

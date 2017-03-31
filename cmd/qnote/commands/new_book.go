@@ -21,7 +21,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/anmil/quicknote/note"
+	"github.com/anmil/quicknote"
 	"github.com/spf13/cobra"
 )
 
@@ -51,7 +51,7 @@ func newbookCmdRun(cmd *cobra.Command, args []string) {
 		if bk != nil {
 			fmt.Printf("Notebook %s already existed\n", bk.Name)
 		} else {
-			bk = &note.Book{
+			bk = &quicknote.Book{
 				Created:  time.Now(),
 				Modified: time.Now(),
 				Name:     name,

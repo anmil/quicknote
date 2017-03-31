@@ -20,7 +20,7 @@ package postgres
 import (
 	"testing"
 
-	"github.com/anmil/quicknote/note"
+	"github.com/anmil/quicknote"
 	"github.com/anmil/quicknote/test"
 )
 
@@ -64,7 +64,7 @@ func TestEditNotePostgresIntegration(t *testing.T) {
 	db := openDatabase(t)
 	defer closeDatabase(db, t)
 
-	bk := note.NewBook()
+	bk := quicknote.NewBook()
 	bk.Name = "NewBook"
 
 	err := db.CreateBook(bk)
@@ -133,13 +133,13 @@ func TestDeleteNotePostgresIntegration(t *testing.T) {
 	}
 }
 
-func saveNotes(t *testing.T, db *Database, notes note.Notes) {
+func saveNotes(t *testing.T, db *Database, notes quicknote.Notes) {
 	for _, n := range notes {
 		saveNote(t, db, n)
 	}
 }
 
-func saveNote(t *testing.T, db *Database, n *note.Note) {
+func saveNote(t *testing.T, db *Database, n *quicknote.Note) {
 	if bk, err := db.GetBookByName(n.Book.Name); err != nil {
 		t.Fatal(err)
 	} else if bk == nil {
@@ -163,7 +163,7 @@ func saveNote(t *testing.T, db *Database, n *note.Note) {
 	}
 }
 
-func getNoteByID(t *testing.T, db *Database, n *note.Note) {
+func getNoteByID(t *testing.T, db *Database, n *quicknote.Note) {
 	if nn, err := db.GetNoteByID(n.ID); err != nil {
 		t.Fatal(err)
 	} else if nn == nil {
@@ -175,8 +175,8 @@ func getNoteByID(t *testing.T, db *Database, n *note.Note) {
 	}
 }
 
-func getNoteByNote(t *testing.T, db *Database, n *note.Note) {
-	nn := note.NewNote()
+func getNoteByNote(t *testing.T, db *Database, n *quicknote.Note) {
+	nn := quicknote.NewNote()
 	nn.Book = n.Book
 	nn.Type = n.Type
 	nn.Title = n.Title
@@ -195,7 +195,7 @@ func getNoteByNote(t *testing.T, db *Database, n *note.Note) {
 	}
 }
 
-func getNotesByID(t *testing.T, db *Database, notes note.Notes) {
+func getNotesByID(t *testing.T, db *Database, notes quicknote.Notes) {
 	var ids []int64
 	for _, n := range notes {
 		ids = append(ids, n.ID)
@@ -213,7 +213,7 @@ func getNotesByID(t *testing.T, db *Database, notes note.Notes) {
 	}
 }
 
-func getNotesByBook(t *testing.T, db *Database, notes note.Notes) {
+func getNotesByBook(t *testing.T, db *Database, notes quicknote.Notes) {
 	if nn, err := db.GetAllBookNotes(notes[0].Book, "modified", "asc"); err != nil {
 		t.Fatal(err)
 	} else if len(nn) != len(notes) {
@@ -226,7 +226,7 @@ func getNotesByBook(t *testing.T, db *Database, notes note.Notes) {
 	}
 }
 
-func getNotesAll(t *testing.T, db *Database, notes note.Notes) {
+func getNotesAll(t *testing.T, db *Database, notes quicknote.Notes) {
 	if nn, err := db.GetAllNotes("modified", "asc"); err != nil {
 		t.Fatal(err)
 	} else if len(nn) != len(notes) {

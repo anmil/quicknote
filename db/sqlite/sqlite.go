@@ -24,7 +24,7 @@ import (
 	"sync"
 
 	// go-sqlite3 must be imported for initialization
-	"github.com/anmil/quicknote/note"
+	"github.com/anmil/quicknote"
 	_ "github.com/mattn/go-sqlite3"
 )
 
@@ -94,8 +94,8 @@ type Database struct {
 	mux    *sync.Mutex
 	DBPath string
 
-	tagNameCache  map[string]*note.Tag
-	bookNameCache map[string]*note.Book
+	tagNameCache  map[string]*quicknote.Tag
+	bookNameCache map[string]*quicknote.Book
 }
 
 // NewDatabase returns a data Database
@@ -121,8 +121,8 @@ func NewDatabase(dbPath ...string) (*Database, error) {
 		db:            db,
 		mux:           &sync.Mutex{},
 		DBPath:        dbPath[0],
-		tagNameCache:  make(map[string]*note.Tag),
-		bookNameCache: make(map[string]*note.Book),
+		tagNameCache:  make(map[string]*quicknote.Tag),
+		bookNameCache: make(map[string]*quicknote.Book),
 	}, nil
 }
 

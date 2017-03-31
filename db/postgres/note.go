@@ -22,11 +22,11 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/anmil/quicknote/note"
+	"github.com/anmil/quicknote"
 )
 
 // GetNoteByID returns the note for the given ID
-func (d *Database) GetNoteByID(id int64) (*note.Note, error) {
+func (d *Database) GetNoteByID(id int64) (*quicknote.Note, error) {
 	sqlStr := `SELECT id, created, modified, bk_id, type, title, body FROM notes WHERE id = $1;`
 
 	stmt, err := d.db.Prepare(sqlStr)
@@ -35,8 +35,8 @@ func (d *Database) GetNoteByID(id int64) (*note.Note, error) {
 	}
 	defer stmt.Close()
 
-	n := note.NewNote()
-	n.Book = note.NewBook()
+	n := quicknote.NewNote()
+	n.Book = quicknote.NewBook()
 
 	err = stmt.QueryRow(id).Scan(&n.ID, &n.Created, &n.Modified, &n.Book.ID, &n.Type, &n.Title, &n.Body)
 	if err != nil && err == sql.ErrNoRows {
@@ -57,7 +57,7 @@ func (d *Database) GetNoteByID(id int64) (*note.Note, error) {
 }
 
 // GetNoteByNote Loads the note's ID, Created, and Modified fields
-func (d *Database) GetNoteByNote(n *note.Note) error {
+func (d *Database) GetNoteByNote(n *quicknote.Note) error {
 	sqlStr := `SELECT id, created, modified FROM notes WHERE bk_id = $1 AND type = $2 AND title = $3 AND body = $4;`
 
 	stmt, err := d.db.Prepare(sqlStr)
@@ -76,7 +76,7 @@ func (d *Database) GetNoteByNote(n *note.Note) error {
 }
 
 // GetAllNotesByIDs returns all notes for the given Notebook
-func (d *Database) GetAllNotesByIDs(ids []int64) (note.Notes, error) {
+func (d *Database) GetAllNotesByIDs(ids []int64) (quicknote.Notes, error) {
 	sqlStr := `SELECT id, created, modified, bk_id, type, title, body FROM notes WHERE id IN (%s);`
 
 	// SQLite has a limit on the number of wild cards that can be given. We must split the query across multiple
@@ -86,7 +86,7 @@ func (d *Database) GetAllNotesByIDs(ids []int64) (note.Notes, error) {
 		return nil, err
 	}
 
-	notes := make(note.Notes, 0, len(ids))
+	notes := make(quicknote.Notes, 0, len(ids))
 	for _, c := range chucks {
 		cids := c.([]int64)
 
@@ -122,7 +122,7 @@ func (d *Database) GetAllNotesByIDs(ids []int64) (note.Notes, error) {
 }
 
 // GetAllBookNotes returns all notes for the given Notebook
-func (d *Database) GetAllBookNotes(book *note.Book, sortBy, order string) (note.Notes, error) {
+func (d *Database) GetAllBookNotes(book *quicknote.Book, sortBy, order string) (quicknote.Notes, error) {
 	sqlStr := `SELECT id, created, modified, bk_id, type, title, body FROM notes WHERE bk_id = $1 ORDER BY %s %s;`
 
 	// This would normally be a really bad idea (sql injection anyone?). But sortBy and order are taking
@@ -149,7 +149,7 @@ func (d *Database) GetAllBookNotes(book *note.Book, sortBy, order string) (note.
 }
 
 // GetAllNotes returns all notes
-func (d *Database) GetAllNotes(sortBy, order string) (note.Notes, error) {
+func (d *Database) GetAllNotes(sortBy, order string) (quicknote.Notes, error) {
 	sqlStr := `SELECT id, created, modified, bk_id, type, title, body FROM notes ORDER BY %s %s;`
 
 	// See GetAllBookNotes for why I'm doing this
@@ -165,7 +165,7 @@ func (d *Database) GetAllNotes(sortBy, order string) (note.Notes, error) {
 }
 
 // CreateNote saves the note to the database
-func (d *Database) CreateNote(n *note.Note) error {
+func (d *Database) CreateNote(n *quicknote.Note) error {
 	sqlStr := "INSERT INTO notes (created, modified, bk_id, type, title, body) " +
 		"VALUES ($1,$2,$3,$4,$5,$6) RETURNING id;"
 
@@ -190,7 +190,7 @@ func (d *Database) CreateNote(n *note.Note) error {
 	return tx.Commit()
 }
 
-func (d *Database) EditNote(n *note.Note) error {
+func (d *Database) EditNote(n *quicknote.Note) error {
 	sqlStr := "UPDATE notes SET modified = $1, title = $2, body = $3 WHERE id = $4;"
 
 	tx, stmt, err := d.getTxStmt(sqlStr)
@@ -216,7 +216,7 @@ func (d *Database) EditNote(n *note.Note) error {
 }
 
 // EditNoteByIDBook updates all notes for the given IDs with the Book bk's ID
-func (d *Database) EditNoteByIDBook(ids []int64, bk *note.Book) error {
+func (d *Database) EditNoteByIDBook(ids []int64, bk *quicknote.Book) error {
 	sqlStr1 := "UPDATE notes SET bk_id = $1 WHERE id in (%s);"
 	sqlStr2 := "UPDATE note_book_tag SET bk_id = $1 WHERE note_id in (%s);"
 
@@ -272,7 +272,7 @@ func (d *Database) EditNoteByIDBook(ids []int64, bk *note.Book) error {
 }
 
 // DeleteNote delete note from database
-func (d *Database) DeleteNote(n *note.Note) error {
+func (d *Database) DeleteNote(n *quicknote.Note) error {
 	sqlStr := `DELETE FROM notes WHERE id = $1;`
 
 	stmt, err := d.db.Prepare(sqlStr)
@@ -288,13 +288,13 @@ func (d *Database) DeleteNote(n *note.Note) error {
 	return nil
 }
 
-func (d *Database) loadNotesFromRows(rows *sql.Rows) (note.Notes, error) {
-	books := make(map[int64]*note.Book)
-	notes := make(note.Notes, 0)
+func (d *Database) loadNotesFromRows(rows *sql.Rows) (quicknote.Notes, error) {
+	books := make(map[int64]*quicknote.Book)
+	notes := make(quicknote.Notes, 0)
 
 	for rows.Next() {
 		var bkID int64
-		n := &note.Note{}
+		n := &quicknote.Note{}
 
 		err := rows.Scan(&n.ID, &n.Created, &n.Modified, &bkID, &n.Type, &n.Title, &n.Body)
 		if err != nil {
@@ -302,7 +302,7 @@ func (d *Database) loadNotesFromRows(rows *sql.Rows) (note.Notes, error) {
 		}
 
 		if _, found := books[bkID]; !found {
-			books[bkID] = &note.Book{ID: bkID}
+			books[bkID] = &quicknote.Book{ID: bkID}
 		}
 		n.Book = books[bkID]
 

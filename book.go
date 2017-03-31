@@ -15,16 +15,15 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-package note
+package quicknote
 
 import (
 	"fmt"
 	"time"
 )
 
-// Tag is a term used as meta data for more
-// accurate searching and labeling.
-type Tag struct {
+// Book is a collection of notes
+type Book struct {
 	ID       int64
 	Created  time.Time
 	Modified time.Time
@@ -32,25 +31,25 @@ type Tag struct {
 	Name string
 }
 
-// NewTag returns a new Tag
-func NewTag() *Tag {
-	return &Tag{}
+// NewBook returns a new Book
+func NewBook() *Book {
+	return &Book{}
 }
 
-func (t *Tag) String() string {
-	return fmt.Sprintf("<Tag ID: %d Name: %s>", t.ID, t.Name)
+func (b *Book) String() string {
+	return fmt.Sprintf("<Book ID: %d Name: %s>", b.ID, b.Name)
 }
 
-type Tags []*Tag
+type Books []*Book
 
-func (t Tags) Len() int {
-	return len(t)
+func (b Books) Len() int {
+	return len(b)
 }
 
-func (t Tags) Less(i, j int) bool {
-	return t[i].ID < t[j].ID
+func (b Books) Less(i, j int) bool {
+	return b[i].ID < b[j].ID
 }
 
-func (t Tags) Swap(i, j int) {
-	t[i], t[j] = t[j], t[i]
+func (b Books) Swap(i, j int) {
+	b[i], b[j] = b[j], b[i]
 }

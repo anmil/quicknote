@@ -23,7 +23,7 @@ import (
 	"fmt"
 	"strconv"
 
-	"github.com/anmil/quicknote/note"
+	"github.com/anmil/quicknote"
 
 	elastic "gopkg.in/olivere/elastic.v5"
 )
@@ -91,7 +91,7 @@ func NewIndex(host, idxName string) (*Index, error) {
 }
 
 // IndexNote creates or updates a note in ElasticSearch index
-func (b *Index) IndexNote(n *note.Note) error {
+func (b *Index) IndexNote(n *quicknote.Note) error {
 	ctx := context.Background()
 
 	_, err := b.client.Index().
@@ -108,7 +108,7 @@ func (b *Index) IndexNote(n *note.Note) error {
 }
 
 // IndexNotes creates or updates a list of notes in ElasticSearch index
-func (b *Index) IndexNotes(notes note.Notes) error {
+func (b *Index) IndexNotes(notes quicknote.Notes) error {
 	for _, n := range notes {
 		b.IndexNote(n)
 	}
@@ -142,7 +142,7 @@ func (b *Index) SearchNote(query string, limit, offset int) ([]int64, uint64, er
 
 // SearchNotePhrase sends a search query to ElasticSearch using Phrase Prefix query
 // If bk is given, only notes for that Book are queried.
-func (b *Index) SearchNotePhrase(query string, bk *note.Book, sort string, limit, offset int) ([]int64, uint64, error) {
+func (b *Index) SearchNotePhrase(query string, bk *quicknote.Book, sort string, limit, offset int) ([]int64, uint64, error) {
 	ctx := context.Background()
 
 	matchPhrasePrefixQuery := elastic.NewMultiMatchQuery(query)
@@ -195,7 +195,7 @@ func (b *Index) getNoteIDsFromResults(sr *elastic.SearchResult) ([]int64, uint64
 }
 
 // DeleteNote deletes note from index
-func (b *Index) DeleteNote(n *note.Note) error {
+func (b *Index) DeleteNote(n *quicknote.Note) error {
 	ctx := context.Background()
 
 	_, err := b.client.Delete().
@@ -210,7 +210,7 @@ func (b *Index) DeleteNote(n *note.Note) error {
 }
 
 // DeleteBook deletes all notes in the index for the notebook
-func (b *Index) DeleteBook(bk *note.Book) error {
+func (b *Index) DeleteBook(bk *quicknote.Book) error {
 	ctx := context.Background()
 
 	query := fmt.Sprintf("book:%s", bk.Name)

@@ -21,16 +21,16 @@ import (
 	"bytes"
 	"fmt"
 
-	"github.com/anmil/quicknote/note"
+	"github.com/anmil/quicknote"
 	"github.com/jroimartin/gocui"
 )
 
 var (
-	curSearchResultsNotes note.Notes
+	curSearchResultsNotes quicknote.Notes
 )
 
 func init() {
-	curSearchResultsNotes = make(note.Notes, 0, 0)
+	curSearchResultsNotes = make(quicknote.Notes, 0, 0)
 }
 
 func mainLayout(g *gocui.Gui) error {
@@ -95,7 +95,7 @@ func searchBoxViewEvent(g *gocui.Gui, v *gocui.View) error {
 	idLen := len(fmt.Sprintf("%d", highestID))
 
 	rV.Clear()
-	curSearchResultsNotes = make(note.Notes, 0, len(ids))
+	curSearchResultsNotes = make(quicknote.Notes, 0, len(ids))
 	for _, noteID := range ids {
 		n, err := dbConn.GetNoteByID(noteID)
 		if err != nil {

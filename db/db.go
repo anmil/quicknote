@@ -22,7 +22,7 @@ import (
 
 	"github.com/anmil/quicknote/db/postgres"
 	"github.com/anmil/quicknote/db/sqlite"
-	"github.com/anmil/quicknote/note"
+	"github.com/anmil/quicknote"
 )
 
 // ErrProviderNotSupported database provider given is not supported
@@ -30,31 +30,31 @@ var ErrProviderNotSupported = errors.New("Unsupported database provider")
 
 // DB interface for the database providers
 type DB interface {
-	GetAllNotes(sortBy, order string) (note.Notes, error)
-	GetAllBookNotes(book *note.Book, sortBy, order string) (note.Notes, error)
-	GetNoteByID(id int64) (*note.Note, error)
-	GetNoteByNote(n *note.Note) error
-	GetAllNotesByIDs(ids []int64) (note.Notes, error)
-	CreateNote(n *note.Note) error
-	EditNote(n *note.Note) error
-	DeleteNote(n *note.Note) error
+	GetAllNotes(sortBy, order string) (quicknote.Notes, error)
+	GetAllBookNotes(book *quicknote.Book, sortBy, order string) (quicknote.Notes, error)
+	GetNoteByID(id int64) (*quicknote.Note, error)
+	GetNoteByNote(n *quicknote.Note) error
+	GetAllNotesByIDs(ids []int64) (quicknote.Notes, error)
+	CreateNote(n *quicknote.Note) error
+	EditNote(n *quicknote.Note) error
+	DeleteNote(n *quicknote.Note) error
 
-	GetAllBooks() (note.Books, error)
-	GetOrCreateBookByName(name string) (*note.Book, error)
-	GetBookByName(name string) (*note.Book, error)
-	CreateBook(b *note.Book) error
-	MergeBooks(b1 *note.Book, b2 *note.Book) error
-	EditNoteByIDBook(ids []int64, bk *note.Book) error
-	EditBook(b1 *note.Book) error
-	LoadBook(b *note.Book) error
-	DeleteBook(bk *note.Book) error
+	GetAllBooks() (quicknote.Books, error)
+	GetOrCreateBookByName(name string) (*quicknote.Book, error)
+	GetBookByName(name string) (*quicknote.Book, error)
+	CreateBook(b *quicknote.Book) error
+	MergeBooks(b1 *quicknote.Book, b2 *quicknote.Book) error
+	EditNoteByIDBook(ids []int64, bk *quicknote.Book) error
+	EditBook(b1 *quicknote.Book) error
+	LoadBook(b *quicknote.Book) error
+	DeleteBook(bk *quicknote.Book) error
 
-	GetAllBookTags(bk *note.Book) (note.Tags, error)
-	GetAllTags() (note.Tags, error)
-	CreateTag(t *note.Tag) error
-	LoadNoteTags(n *note.Note) error
-	GetOrCreateTagByName(name string) (*note.Tag, error)
-	GetTagByName(name string) (*note.Tag, error)
+	GetAllBookTags(bk *quicknote.Book) (quicknote.Tags, error)
+	GetAllTags() (quicknote.Tags, error)
+	CreateTag(t *quicknote.Tag) error
+	LoadNoteTags(n *quicknote.Note) error
+	GetOrCreateTagByName(name string) (*quicknote.Tag, error)
+	GetTagByName(name string) (*quicknote.Tag, error)
 
 	Close() error
 }

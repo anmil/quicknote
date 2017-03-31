@@ -26,10 +26,10 @@ import (
 	"path"
 	"strings"
 
+	"github.com/anmil/quicknote"
 	"github.com/anmil/quicknote/cmd/shared/utils"
 	"github.com/anmil/quicknote/db"
 	"github.com/anmil/quicknote/index"
-	"github.com/anmil/quicknote/note"
 	"github.com/spf13/viper"
 )
 
@@ -163,7 +163,7 @@ func getESConn() (index.Index, error) {
 }
 
 // GetWorkingBook gets the config working Book
-func GetWorkingBook(db db.DB, bkName string) (*note.Book, error) {
+func GetWorkingBook(db db.DB, bkName string) (*quicknote.Book, error) {
 	if bkName == viper.GetString("default_book") {
 		return db.GetOrCreateBookByName(bkName)
 	}

@@ -23,7 +23,7 @@ import (
 	"io"
 	"time"
 
-	"github.com/anmil/quicknote/note"
+	"github.com/anmil/quicknote"
 
 	"encoding/binary"
 )
@@ -202,7 +202,7 @@ func (b *BinaryEncoder) WriteHeader() (uint64, error) {
 // Books and Tags are only encoded and written to w once. Meaning, if
 // they are encountered again in a different note, they will not be
 // encoded again.
-func (b *BinaryEncoder) WriteNote(n *note.Note) (uint64, error) {
+func (b *BinaryEncoder) WriteNote(n *quicknote.Note) (uint64, error) {
 	if !b.headerWritten {
 		return 0, ErrHeaderNotWritten
 	}
@@ -232,7 +232,7 @@ func (b *BinaryEncoder) WriteNote(n *note.Note) (uint64, error) {
 	return bytesWritten, nil
 }
 
-func (b *BinaryEncoder) writeBook(bk *note.Book) (uint64, error) {
+func (b *BinaryEncoder) writeBook(bk *quicknote.Book) (uint64, error) {
 	// Check if we have already written this book to the stream
 	if _, found := b.wBooks[bk.ID]; found {
 		return 0, nil
@@ -261,7 +261,7 @@ func (b *BinaryEncoder) writeBook(bk *note.Book) (uint64, error) {
 	return wb, err
 }
 
-func (b *BinaryEncoder) writeTag(tg *note.Tag) (uint64, error) {
+func (b *BinaryEncoder) writeTag(tg *quicknote.Tag) (uint64, error) {
 	// Check if we have already written this book to the stream
 	if _, found := b.wTags[tg.ID]; found {
 		return 0, nil
@@ -290,7 +290,7 @@ func (b *BinaryEncoder) writeTag(tg *note.Tag) (uint64, error) {
 	return wb, err
 }
 
-func (b *BinaryEncoder) writeNote(n *note.Note) (uint64, error) {
+func (b *BinaryEncoder) writeNote(n *quicknote.Note) (uint64, error) {
 	buff := &bytes.Buffer{}
 
 	if _, err := buff.Write([]byte{byte(Note)}); err != nil {
@@ -387,8 +387,8 @@ type BinaryDecoder struct {
 	Header *Header
 	Err    error
 
-	wBooks map[int64]*note.Book
-	wTags  map[int64]*note.Tag
+	wBooks map[int64]*quicknote.Book
+	wTags  map[int64]*quicknote.Tag
 }
 
 // Header QNOT file header block
@@ -401,8 +401,8 @@ type Header struct {
 func NewBinaryDecoder(r io.Reader) *BinaryDecoder {
 	return &BinaryDecoder{
 		r:      r,
-		wBooks: make(map[int64]*note.Book),
-		wTags:  make(map[int64]*note.Tag),
+		wBooks: make(map[int64]*quicknote.Book),
+		wTags:  make(map[int64]*quicknote.Tag),
 	}
 }
 
@@ -441,17 +441,17 @@ func (d *BinaryDecoder) ParseHeader() error {
 
 // ParseNotes starts the parser and returns a Note channel
 // Must call ParseHeader() first or an error is returned
-func (d *BinaryDecoder) ParseNotes() (<-chan *note.Note, error) {
+func (d *BinaryDecoder) ParseNotes() (<-chan *quicknote.Note, error) {
 	if d.Header == nil {
 		return nil, ErrHeaderNotParsed
 	}
 
-	notes := make(chan *note.Note, 1024)
+	notes := make(chan *quicknote.Note, 1024)
 	go d.parseNotes(notes)
 	return notes, nil
 }
 
-func (d *BinaryDecoder) parseNotes(out chan *note.Note) {
+func (d *BinaryDecoder) parseNotes(out chan *quicknote.Note) {
 	for {
 		t, err := readRecordType(d.r)
 		if err == io.EOF {
@@ -492,9 +492,9 @@ func (d *BinaryDecoder) parseNotes(out chan *note.Note) {
 	close(out)
 }
 
-func (d *BinaryDecoder) parseBook() (*note.Book, error) {
+func (d *BinaryDecoder) parseBook() (*quicknote.Book, error) {
 	var err error
-	bk := note.NewBook()
+	bk := quicknote.NewBook()
 
 	if bk.ID, err = readInt64(d.r); err != nil {
 		return nil, err
@@ -512,9 +512,9 @@ func (d *BinaryDecoder) parseBook() (*note.Book, error) {
 	return bk, nil
 }
 
-func (d *BinaryDecoder) parseTag() (*note.Tag, error) {
+func (d *BinaryDecoder) parseTag() (*quicknote.Tag, error) {
 	var err error
-	t := note.NewTag()
+	t := quicknote.NewTag()
 
 	if t.ID, err = readInt64(d.r); err != nil {
 		return nil, err
@@ -532,9 +532,9 @@ func (d *BinaryDecoder) parseTag() (*note.Tag, error) {
 	return t, nil
 }
 
-func (d *BinaryDecoder) parseNote() (*note.Note, error) {
+func (d *BinaryDecoder) parseNote() (*quicknote.Note, error) {
 	var err error
-	n := note.NewNote()
+	n := quicknote.NewNote()
 
 	if n.ID, err = readInt64(d.r); err != nil {
 		return nil, err
@@ -595,7 +595,7 @@ func readString(rd io.Reader) (string, error) {
 	strLen, err := readInt64(rd)
 	if err != nil {
 		return "", err
-	} else if strLen > note.MaxStringLen {
+	} else if strLen > quicknote.MaxStringLen {
 		return "", ErrInvalidString
 	}
 	buff := make([]byte, strLen)

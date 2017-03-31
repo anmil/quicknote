@@ -27,10 +27,10 @@ import (
 	"sync"
 	"time"
 
+	"github.com/anmil/quicknote"
+
 	"github.com/blevesearch/bleve"
 	bquery "github.com/blevesearch/bleve/search/query"
-
-	"github.com/anmil/quicknote/note"
 )
 
 type indexNote struct {
@@ -68,7 +68,7 @@ func (b *bIndex) BatchIndex(wg *sync.WaitGroup, notes []*indexNote) {
 	}
 }
 
-func (b *bIndex) DeleteBook(wg *sync.WaitGroup, bk *note.Book) {
+func (b *bIndex) DeleteBook(wg *sync.WaitGroup, bk *quicknote.Book) {
 	defer wg.Done()
 
 	ids, err := b.getNextDeleteBatch(bk)
@@ -94,7 +94,7 @@ func (b *bIndex) DeleteBook(wg *sync.WaitGroup, bk *note.Book) {
 	}
 }
 
-func (b *bIndex) getNextDeleteBatch(bk *note.Book) ([]string, error) {
+func (b *bIndex) getNextDeleteBatch(bk *quicknote.Book) ([]string, error) {
 	query := fmt.Sprintf("+book:%s", bk.Name)
 	q := bleve.NewQueryStringQuery(query)
 
@@ -206,7 +206,7 @@ func (b *Index) saveIndexIdx() error {
 }
 
 // IndexNote creates or updates a note in Bleve index
-func (b *Index) IndexNote(n *note.Note) error {
+func (b *Index) IndexNote(n *quicknote.Note) error {
 	iN := &indexNote{
 		ID:       n.ID,
 		Created:  n.Created,
@@ -234,7 +234,7 @@ func (b *Index) IndexNote(n *note.Note) error {
 }
 
 // IndexNotes creates or updates a list of notes in Bleve index
-func (b *Index) IndexNotes(notes note.Notes) error {
+func (b *Index) IndexNotes(notes quicknote.Notes) error {
 	var wg sync.WaitGroup
 	var batchSize int64
 
@@ -327,7 +327,7 @@ func (b *Index) SearchNote(query string, limit, offset int) ([]int64, uint64, er
 
 // SearchNotePhrase sends a search query to Bleve using Prefix query
 // If bk is given, only notes for that Book are queried.
-func (b *Index) SearchNotePhrase(query string, bk *note.Book, sort string, limit, offset int) ([]int64, uint64, error) {
+func (b *Index) SearchNotePhrase(query string, bk *quicknote.Book, sort string, limit, offset int) ([]int64, uint64, error) {
 	boolQuery := bleve.NewBooleanQuery()
 
 	// Bleve does not support phrase prefix query natively
@@ -397,7 +397,7 @@ func (b *Index) SearchNotePhrase(query string, bk *note.Book, sort string, limit
 }
 
 // DeleteNote deletes note from index
-func (b *Index) DeleteNote(n *note.Note) error {
+func (b *Index) DeleteNote(n *quicknote.Note) error {
 	for _, i := range b.indexes {
 		err := i.Index.Delete(strconv.FormatInt(n.ID, 10))
 		if err != nil {
@@ -408,7 +408,7 @@ func (b *Index) DeleteNote(n *note.Note) error {
 }
 
 // DeleteBook deletes all notes in the index for the notebook
-func (b *Index) DeleteBook(bk *note.Book) error {
+func (b *Index) DeleteBook(bk *quicknote.Book) error {
 	var wg sync.WaitGroup
 
 	for _, i := range b.indexes {

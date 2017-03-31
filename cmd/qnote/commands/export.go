@@ -25,9 +25,9 @@ import (
 	"path/filepath"
 	"time"
 
+	"github.com/anmil/quicknote"
 	"github.com/anmil/quicknote/cmd/shared/encoding"
 	"github.com/anmil/quicknote/cmd/shared/utils"
-	"github.com/anmil/quicknote/note"
 
 	"github.com/spf13/cobra"
 )
@@ -96,7 +96,7 @@ func exportBookCmdRun(cmd *cobra.Command, args []string) {
 		exitValidationError("No books given", cmd)
 	}
 
-	var books note.Books
+	var books quicknote.Books
 	for _, bkName := range args {
 		bk, err := dbConn.GetBookByName(bkName)
 		exitOnError(err)
@@ -114,7 +114,7 @@ func exportBookCmdRun(cmd *cobra.Command, args []string) {
 		defer file.Close()
 	}
 
-	var notes note.Notes
+	var notes quicknote.Notes
 	for _, bk := range books {
 		ns, err := dbConn.GetAllBookNotes(bk, "created", "asc")
 		exitOnError(err)
@@ -125,7 +125,7 @@ func exportBookCmdRun(cmd *cobra.Command, args []string) {
 	exitOnError(err)
 }
 
-func exportNotes(notes note.Notes, fileName string, out io.Writer, compressed bool) error {
+func exportNotes(notes quicknote.Notes, fileName string, out io.Writer, compressed bool) error {
 	if compressed {
 		zip := gzip.NewWriter(out)
 		zip.Name = fileName

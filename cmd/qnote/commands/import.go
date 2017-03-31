@@ -25,9 +25,9 @@ import (
 	"os"
 	"time"
 
+	"github.com/anmil/quicknote"
 	"github.com/anmil/quicknote/cmd/shared/encoding"
 	"github.com/anmil/quicknote/cmd/shared/utils"
-	"github.com/anmil/quicknote/note"
 
 	"github.com/spf13/cobra"
 )
@@ -113,8 +113,8 @@ func importCmdRun(cmd *cobra.Command, args []string) {
 	exitOnError(err)
 
 	bkNew := make(map[string]bool)
-	books := make(map[string]*note.Book)
-	tags := make(map[string]*note.Tag)
+	books := make(map[string]*quicknote.Book)
+	tags := make(map[string]*quicknote.Tag)
 
 	for n := range notes {
 		bk, found := books[n.Book.Name]

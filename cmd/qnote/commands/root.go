@@ -23,10 +23,10 @@ import (
 	"log"
 	"os"
 
+	"github.com/anmil/quicknote"
 	"github.com/anmil/quicknote/cmd/shared/config"
 	"github.com/anmil/quicknote/db"
 	"github.com/anmil/quicknote/index"
-	"github.com/anmil/quicknote/note"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -41,7 +41,7 @@ var (
 var (
 	dbConn          db.DB
 	idxConn         index.Index
-	workingNotebook *note.Book
+	workingNotebook *quicknote.Book
 )
 
 func init() {

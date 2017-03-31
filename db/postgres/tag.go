@@ -23,11 +23,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/anmil/quicknote/note"
+	"github.com/anmil/quicknote"
 )
 
 // GetAllBookTags returns all tags for the given Book
-func (d *Database) GetAllBookTags(bk *note.Book) (note.Tags, error) {
+func (d *Database) GetAllBookTags(bk *quicknote.Book) (quicknote.Tags, error) {
 	sqlStr := "SELECT id, created, modified, name FROM tags WHERE id in " +
 		"(SELECT tag_id FROM note_book_tag WHERE bk_id = $1);"
 
@@ -47,7 +47,7 @@ func (d *Database) GetAllBookTags(bk *note.Book) (note.Tags, error) {
 }
 
 // GetAllTags returns all tags
-func (d *Database) GetAllTags() (note.Tags, error) {
+func (d *Database) GetAllTags() (quicknote.Tags, error) {
 	sqlStr := "SELECT id, created, modified, name FROM tags;"
 
 	rows, err := d.db.Query(sqlStr)
@@ -60,7 +60,7 @@ func (d *Database) GetAllTags() (note.Tags, error) {
 }
 
 // GetOrCreateTagByName returns a tag, creating it if it does not exists
-func (d *Database) GetOrCreateTagByName(name string) (*note.Tag, error) {
+func (d *Database) GetOrCreateTagByName(name string) (*quicknote.Tag, error) {
 	if len(name) == 0 {
 		return nil, errors.New("No Tag name given")
 	}
@@ -70,7 +70,7 @@ func (d *Database) GetOrCreateTagByName(name string) (*note.Tag, error) {
 		return nil, err
 	}
 	if tg == nil {
-		tg = &note.Tag{
+		tg = &quicknote.Tag{
 			Created:  time.Now(),
 			Modified: time.Now(),
 			Name:     name,
@@ -85,7 +85,7 @@ func (d *Database) GetOrCreateTagByName(name string) (*note.Tag, error) {
 }
 
 // GetTagByName returns the tag with the given name
-func (d *Database) GetTagByName(name string) (*note.Tag, error) {
+func (d *Database) GetTagByName(name string) (*quicknote.Tag, error) {
 	sqlStr := "SELECT id, created, modified, name FROM tags WHERE name = $1;"
 
 	stmt, err := d.db.Prepare(sqlStr)
@@ -94,7 +94,7 @@ func (d *Database) GetTagByName(name string) (*note.Tag, error) {
 	}
 	defer stmt.Close()
 
-	t := note.NewTag()
+	t := quicknote.NewTag()
 	err = stmt.QueryRow(name).Scan(&t.ID, &t.Created, &t.Modified, &t.Name)
 	if err != nil && err == sql.ErrNoRows {
 		return nil, nil
@@ -106,7 +106,7 @@ func (d *Database) GetTagByName(name string) (*note.Tag, error) {
 }
 
 // LoadNoteTags loads all the tags for the given Note
-func (d *Database) LoadNoteTags(n *note.Note) error {
+func (d *Database) LoadNoteTags(n *quicknote.Note) error {
 	sqlStr := "SELECT id, created, modified, name FROM tags WHERE id in " +
 		"(SELECT tag_id FROM note_tag WHERE note_id = $1);"
 
@@ -127,7 +127,7 @@ func (d *Database) LoadNoteTags(n *note.Note) error {
 }
 
 // CreateTag saves the tag to the database
-func (d *Database) CreateTag(t *note.Tag) error {
+func (d *Database) CreateTag(t *quicknote.Tag) error {
 	sqlStr := "INSERT INTO tags (created, modified, name) VALUES ($1,$2,$3) RETURNING id;"
 
 	tx, stmt, err := d.getTxStmt(sqlStr)
@@ -146,14 +146,14 @@ func (d *Database) CreateTag(t *note.Tag) error {
 }
 
 // GetTagsByName returns the Tag for the given name
-func (d *Database) GetTagsByName(name string) (*note.Tag, error) {
+func (d *Database) GetTagsByName(name string) (*quicknote.Tag, error) {
 	return nil, nil
 }
 
-func (d *Database) loadTagsFromRows(rows *sql.Rows) (note.Tags, error) {
-	tags := make(note.Tags, 0)
+func (d *Database) loadTagsFromRows(rows *sql.Rows) (quicknote.Tags, error) {
+	tags := make(quicknote.Tags, 0)
 	for rows.Next() {
-		t := note.NewTag()
+		t := quicknote.NewTag()
 		err := rows.Scan(&t.ID, &t.Created, &t.Modified, &t.Name)
 		if err != nil {
 			return nil, err
@@ -169,7 +169,7 @@ func (d *Database) loadTagsFromRows(rows *sql.Rows) (note.Tags, error) {
 	return tags, nil
 }
 
-func (d *Database) createTagRal(n *note.Note, tx *sql.Tx) error {
+func (d *Database) createTagRal(n *quicknote.Note, tx *sql.Tx) error {
 	for _, t := range n.Tags {
 		if err := d.createNoteTagRel(n, t, tx); err != nil {
 			return err
@@ -181,7 +181,7 @@ func (d *Database) createTagRal(n *note.Note, tx *sql.Tx) error {
 	return nil
 }
 
-func (d *Database) createNoteTagRel(n *note.Note, t *note.Tag, tx *sql.Tx) error {
+func (d *Database) createNoteTagRel(n *quicknote.Note, t *quicknote.Tag, tx *sql.Tx) error {
 	sqlStr := "INSERT INTO note_tag (note_id, tag_id) VALUES ($1,$2);"
 
 	stmt, err := tx.Prepare(sqlStr)
@@ -198,7 +198,7 @@ func (d *Database) createNoteTagRel(n *note.Note, t *note.Tag, tx *sql.Tx) error
 	return nil
 }
 
-func (d *Database) createNoteBookTagRel(n *note.Note, t *note.Tag, tx *sql.Tx) error {
+func (d *Database) createNoteBookTagRel(n *quicknote.Note, t *quicknote.Tag, tx *sql.Tx) error {
 	sqlStr := "INSERT INTO note_book_tag (note_id, bk_id, tag_id) VALUES ($1,$2,$3);"
 
 	stmt, err := tx.Prepare(sqlStr)
@@ -215,7 +215,7 @@ func (d *Database) createNoteBookTagRel(n *note.Note, t *note.Tag, tx *sql.Tx) e
 	return nil
 }
 
-func (d *Database) deleteTagRal(n *note.Note) error {
+func (d *Database) deleteTagRal(n *quicknote.Note) error {
 	if err := d.deleteNoteTagsRel(n); err != nil {
 		return err
 	}
@@ -225,7 +225,7 @@ func (d *Database) deleteTagRal(n *note.Note) error {
 	return nil
 }
 
-func (d *Database) deleteNoteTagsRel(n *note.Note) error {
+func (d *Database) deleteNoteTagsRel(n *quicknote.Note) error {
 	sqlStr := "DELETE FROM note_tag WHERE note_id = $1"
 
 	stmt, err := d.db.Prepare(sqlStr)
@@ -242,7 +242,7 @@ func (d *Database) deleteNoteTagsRel(n *note.Note) error {
 	return nil
 }
 
-func (d *Database) deleteNoteNookTagsRel(n *note.Note) error {
+func (d *Database) deleteNoteNookTagsRel(n *quicknote.Note) error {
 	sqlStr := "DELETE FROM note_book_tag WHERE note_id = $1"
 
 	stmt, err := d.db.Prepare(sqlStr)

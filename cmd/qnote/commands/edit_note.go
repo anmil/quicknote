@@ -22,8 +22,8 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/anmil/quicknote"
 	"github.com/anmil/quicknote/cmd/shared/utils"
-	"github.com/anmil/quicknote/note"
 	"github.com/anmil/quicknote/parser"
 	"github.com/spf13/cobra"
 )
@@ -69,14 +69,14 @@ func editNoteCmdRun(cmd *cobra.Command, args []string) {
 	exitOnError(err)
 	p.Parse(editor.Text())
 
-	tags := make(note.Tags, 0, len(p.Tags()))
+	tags := make(quicknote.Tags, 0, len(p.Tags()))
 	for _, t := range p.Tags() {
 		tag, err := dbConn.GetOrCreateTagByName(t)
 		exitOnError(err)
 		tags = append(tags, tag)
 	}
 
-	newNote := &note.Note{
+	newNote := &quicknote.Note{
 		ID:       oldNote.ID,
 		Created:  oldNote.Created,
 		Modified: time.Now(),

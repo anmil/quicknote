@@ -20,7 +20,7 @@ package postgres
 import (
 	"testing"
 
-	"github.com/anmil/quicknote/note"
+	"github.com/anmil/quicknote"
 	"github.com/anmil/quicknote/test"
 )
 
@@ -105,7 +105,7 @@ func TestLoadNoteTagsPostgresIntegration(t *testing.T) {
 	saveNote(t, db, n)
 
 	tags := n.Tags
-	n.Tags = make(note.Tags, 0)
+	n.Tags = make(quicknote.Tags, 0)
 
 	if err := db.LoadNoteTags(n); err != nil {
 		t.Fatal(err)

@@ -5,7 +5,7 @@ import (
 	"bytes"
 	"testing"
 
-	"github.com/anmil/quicknote/note"
+	"github.com/anmil/quicknote"
 	"github.com/anmil/quicknote/test"
 )
 
@@ -215,7 +215,7 @@ func TestBinaryDecoder(t *testing.T) {
 		return
 	}
 
-	notes := make(note.Notes, 0)
+	notes := make(quicknote.Notes, 0)
 	for n := range notesChan {
 		notes = append(notes, n)
 	}
@@ -275,7 +275,7 @@ func BenchmarkBinaryDecoder(b *testing.B) {
 			return
 		}
 
-		notes := make(note.Notes, 0)
+		notes := make(quicknote.Notes, 0)
 		for n := range notesChan {
 			notes = append(notes, n)
 		}

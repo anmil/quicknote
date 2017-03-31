@@ -25,7 +25,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/anmil/quicknote/note"
+	"github.com/anmil/quicknote"
+
 	"github.com/fatih/color"
 )
 
@@ -69,7 +70,7 @@ var (
 )
 
 // PrintNotes prints notes in the given format
-func PrintNotes(notes note.Notes, format string) error {
+func PrintNotes(notes quicknote.Notes, format string) error {
 	var err error
 	switch format {
 	case "ids":
@@ -87,7 +88,7 @@ func PrintNotes(notes note.Notes, format string) error {
 }
 
 // PrintNoteColored prints the Note to stdout in color
-func PrintNoteColored(n *note.Note, titleOnly bool) {
+func PrintNoteColored(n *quicknote.Note, titleOnly bool) {
 	if titleOnly {
 		printNoteTitleOnly(n)
 	} else {
@@ -96,7 +97,7 @@ func PrintNoteColored(n *note.Note, titleOnly bool) {
 }
 
 // PrintNotesColored prints the list of Notes to stdout in color
-func PrintNotesColored(notes note.Notes, titleOnly bool) {
+func PrintNotesColored(notes quicknote.Notes, titleOnly bool) {
 	if titleOnly {
 		printNotesTitleOnly(notes)
 	} else {
@@ -104,20 +105,20 @@ func PrintNotesColored(notes note.Notes, titleOnly bool) {
 	}
 }
 
-func printNotesTitleOnly(notes note.Notes) {
+func printNotesTitleOnly(notes quicknote.Notes) {
 	for _, n := range notes {
 		printNoteTitleOnly(n)
 	}
 }
 
-func printNoteTitleOnly(n *note.Note) {
+func printNoteTitleOnly(n *quicknote.Note) {
 	fmt.Print(FgCyan("ID: "))
 	fmt.Print(FgMagenta(n.ID))
 	fmt.Print(FgCyan(" Title: "))
 	fmt.Println(n.Title)
 }
 
-func printDetailedNotes(notes note.Notes) {
+func printDetailedNotes(notes quicknote.Notes) {
 	nLen := len(notes)
 	for idx, n := range notes {
 		printDetailedNoteColored(n)
@@ -127,7 +128,7 @@ func printDetailedNotes(notes note.Notes) {
 	}
 }
 
-func printDetailedNoteColored(n *note.Note) {
+func printDetailedNoteColored(n *quicknote.Note) {
 	fmt.Print(FgCyan("ID: "))
 	fmt.Print(n.ID)
 
@@ -156,7 +157,7 @@ func printDetailedNoteColored(n *note.Note) {
 	}
 }
 
-func colorTags(tags note.Tags) []string {
+func colorTags(tags quicknote.Tags) []string {
 	ctags := make([]string, 0, len(tags))
 	for i := 0; i < len(tags); i++ {
 		ctags = append(ctags, FgBlue(tags[i].Name))
@@ -165,14 +166,14 @@ func colorTags(tags note.Tags) []string {
 }
 
 // PrintNotesIDs prints the Note's ids
-func PrintNotesIDs(notes note.Notes) {
+func PrintNotesIDs(notes quicknote.Notes) {
 	for _, n := range notes {
 		fmt.Println(n.ID)
 	}
 }
 
 // PrintNotesCSV prints Notes in csv format
-func PrintNotesCSV(notes note.Notes) error {
+func PrintNotesCSV(notes quicknote.Notes) error {
 	w := csv.NewWriter(os.Stdout)
 	w.Write([]string{"id", "created", "modified", "type", "title", "body", "book", "tags"})
 
@@ -198,7 +199,7 @@ func PrintNotesCSV(notes note.Notes) error {
 }
 
 // PrintNotesJSON prints Notes in json format
-func PrintNotesJSON(notes note.Notes) error {
+func PrintNotesJSON(notes quicknote.Notes) error {
 	b, err := json.Marshal(notes)
 	if err != nil {
 		return err

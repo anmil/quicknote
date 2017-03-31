@@ -24,7 +24,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/anmil/quicknote/note"
+	"github.com/anmil/quicknote"
 )
 
 var notesJSON = `[
@@ -85,15 +85,15 @@ type JsonNote struct {
 }
 
 func init() {
-	noteBooks = make(map[string]*note.Book)
-	noteTags = make(map[string]*note.Tag)
+	noteBooks = make(map[string]*quicknote.Book)
+	noteTags = make(map[string]*quicknote.Tag)
 }
 
-func GetTestNotes() note.Notes {
+func GetTestNotes() quicknote.Notes {
 	return GetTestNotesCust(notesJSON)
 }
 
-func GetTestNotesCust(s string) note.Notes {
+func GetTestNotesCust(s string) quicknote.Notes {
 	reader := strings.NewReader(s)
 	dec := json.NewDecoder(reader)
 
@@ -103,14 +103,14 @@ func GetTestNotesCust(s string) note.Notes {
 		panic(err)
 	}
 
-	testNotes := make(note.Notes, len(jsonNotes))
+	testNotes := make(quicknote.Notes, len(jsonNotes))
 	for idx, jn := range jsonNotes {
-		tags := make(note.Tags, len(jn.Tags))
+		tags := make(quicknote.Tags, len(jn.Tags))
 		for i, t := range jn.Tags {
 			tags[i] = getTag(t)
 		}
 
-		n := note.NewNote()
+		n := quicknote.NewNote()
 		n.ID = jn.ID
 		n.Created = jn.Created
 		n.Modified = jn.Modified
@@ -126,14 +126,14 @@ func GetTestNotesCust(s string) note.Notes {
 	return testNotes
 }
 
-func CheckNotes(t *testing.T, notes1, notes2 note.Notes) {
-	nnNotes := note.Notes{}
+func CheckNotes(t *testing.T, notes1, notes2 quicknote.Notes) {
+	nnNotes := quicknote.Notes{}
 	for _, t := range notes1 {
 		nnNotes = append(nnNotes, t)
 	}
 	sort.Sort(nnNotes)
 
-	nNotes := note.Notes{}
+	nNotes := quicknote.Notes{}
 	for _, t := range notes2 {
 		nNotes = append(nNotes, t)
 	}
@@ -144,7 +144,7 @@ func CheckNotes(t *testing.T, notes1, notes2 note.Notes) {
 	}
 }
 
-func NoteSliceEq(a, b note.Notes) bool {
+func NoteSliceEq(a, b quicknote.Notes) bool {
 	if a == nil && b == nil {
 		return true
 	}
