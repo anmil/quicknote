@@ -15,27 +15,14 @@
 // You should have received a copy of the GNU General Public License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-package db
+package quicknote
 
-import (
-	"errors"
-
-	"github.com/anmil/quicknote"
-	"github.com/anmil/quicknote/db/postgres"
-	"github.com/anmil/quicknote/db/sqlite"
-)
-
-// ErrProviderNotSupported database provider given is not supported
-var ErrProviderNotSupported = errors.New("Unsupported database provider")
-
-// NewDatabase returns a new database for the given provider
-func NewDatabase(provider string, options ...string) (quicknote.DB, error) {
-	switch provider {
-	case "sqlite":
-		return sqlite.NewDatabase(options...)
-	case "postgres":
-		return postgres.NewDatabase(options...)
-	default:
-		return nil, ErrProviderNotSupported
-	}
+// Index interface for the index providers
+type Index interface {
+	IndexNote(n *Note) error
+	IndexNotes(notes Notes) error
+	SearchNote(query string, limit, offset int) ([]int64, uint64, error)
+	SearchNotePhrase(query string, bk *Book, sort string, limit, offset int) ([]int64, uint64, error)
+	DeleteNote(n *Note) error
+	DeleteBook(bk *Book) error
 }

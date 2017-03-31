@@ -25,8 +25,6 @@ import (
 
 	"github.com/anmil/quicknote"
 	"github.com/anmil/quicknote/cmd/shared/config"
-	"github.com/anmil/quicknote/db"
-	"github.com/anmil/quicknote/index"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -39,8 +37,8 @@ var (
 )
 
 var (
-	dbConn          db.DB
-	idxConn         index.Index
+	dbConn          quicknote.DB
+	idxConn         quicknote.Index
 	workingNotebook *quicknote.Book
 )
 

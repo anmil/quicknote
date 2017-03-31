@@ -75,8 +75,8 @@ func (d *Database) GetNoteByNote(n *quicknote.Note) error {
 	return err
 }
 
-// GetAllNotesByIDs returns all notes for the given Notebook
-func (d *Database) GetAllNotesByIDs(ids []int64) (quicknote.Notes, error) {
+// GetNotesByIDs returns all notes for the given Notebook
+func (d *Database) GetNotesByIDs(ids []int64) (quicknote.Notes, error) {
 	sqlStr := `SELECT id, created, modified, bk_id, type, title, body FROM notes WHERE id IN (%s);`
 
 	// SQLite has a limit on the number of wild cards that can be given. We must split the query across multiple

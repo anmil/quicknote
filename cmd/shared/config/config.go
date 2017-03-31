@@ -96,7 +96,7 @@ func isTestingMode() {
 }
 
 // GetDBConn gets a new Database connection for the config provider
-func GetDBConn() (db.DB, error) {
+func GetDBConn() (quicknote.DB, error) {
 	switch viper.GetString("db_provider") {
 	case "sqlite":
 		return getSqliteDBConn()
@@ -107,7 +107,7 @@ func GetDBConn() (db.DB, error) {
 	}
 }
 
-func getSqliteDBConn() (db.DB, error) {
+func getSqliteDBConn() (quicknote.DB, error) {
 	fp := path.Join(DataDirectory, "notes.db")
 	d, err := db.NewDatabase("sqlite", fp)
 	if err != nil {
@@ -116,7 +116,7 @@ func getSqliteDBConn() (db.DB, error) {
 	return d, err
 }
 
-func getPostgresDBConn() (db.DB, error) {
+func getPostgresDBConn() (quicknote.DB, error) {
 	name := viper.GetString("postgres.name")
 	host := viper.GetString("postgres.host")
 	port := viper.GetString("postgres.port")
@@ -132,7 +132,7 @@ func getPostgresDBConn() (db.DB, error) {
 }
 
 // GetIndexConn gets a new Index connection for the config provider
-func GetIndexConn() (index.Index, error) {
+func GetIndexConn() (quicknote.Index, error) {
 	switch IndexProvider {
 	case "bleve":
 		return getBleveConn()
@@ -143,7 +143,7 @@ func GetIndexConn() (index.Index, error) {
 	}
 }
 
-func getBleveConn() (index.Index, error) {
+func getBleveConn() (quicknote.Index, error) {
 	shareds := viper.GetString("bleve_shard_count")
 	idxConn, err := index.NewIndex("bleve", DataDirectory, shareds)
 	if err != nil {
@@ -152,7 +152,7 @@ func getBleveConn() (index.Index, error) {
 	return idxConn, nil
 }
 
-func getESConn() (index.Index, error) {
+func getESConn() (quicknote.Index, error) {
 	url := viper.GetString("elastic_url")
 	indexName := viper.GetString("elastic_index_name")
 	idxConn, err := index.NewIndex("elastic", url, indexName)
@@ -163,7 +163,7 @@ func getESConn() (index.Index, error) {
 }
 
 // GetWorkingBook gets the config working Book
-func GetWorkingBook(db db.DB, bkName string) (*quicknote.Book, error) {
+func GetWorkingBook(db quicknote.DB, bkName string) (*quicknote.Book, error) {
 	if bkName == viper.GetString("default_book") {
 		return db.GetOrCreateBookByName(bkName)
 	}

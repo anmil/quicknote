@@ -54,7 +54,7 @@ func getNoteCmdRun(cmd *cobra.Command, args []string) {
 			noteIDs = append(noteIDs, noteID)
 		}
 
-		notes, err := dbConn.GetAllNotesByIDs(noteIDs)
+		notes, err := dbConn.GetNotesByIDs(noteIDs)
 		exitOnError(err)
 
 		if displayFormat == "short" && displayTextOneResult && len(notes) == 1 {

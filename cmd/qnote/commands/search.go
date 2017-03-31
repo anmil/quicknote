@@ -91,7 +91,7 @@ func searchCmdRun(cmd *cobra.Command, args []string) {
 	}
 	exitOnError(err)
 
-	notes, err := dbConn.GetAllNotesByIDs(ids)
+	notes, err := dbConn.GetNotesByIDs(ids)
 	exitOnError(err)
 
 	if displayFormat == "short" && displayTextOneResult && len(notes) == 1 {

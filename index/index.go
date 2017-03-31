@@ -30,18 +30,8 @@ import (
 // ErrProviderNotSupported index provider given is not supported
 var ErrProviderNotSupported = errors.New("Unsupported provider given")
 
-// Index interface for the index providers
-type Index interface {
-	IndexNote(n *quicknote.Note) error
-	IndexNotes(notes quicknote.Notes) error
-	SearchNote(query string, limit, offset int) ([]int64, uint64, error)
-	SearchNotePhrase(query string, bk *quicknote.Book, sort string, limit, offset int) ([]int64, uint64, error)
-	DeleteNote(n *quicknote.Note) error
-	DeleteBook(bk *quicknote.Book) error
-}
-
 // NewIndex returns a new indexer for the given provider
-func NewIndex(provider string, options ...string) (Index, error) {
+func NewIndex(provider string, options ...string) (quicknote.Index, error) {
 	switch provider {
 	case "bleve":
 		shards, err := strconv.Atoi(options[1])

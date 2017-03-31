@@ -201,7 +201,7 @@ func getNotesByID(t *testing.T, db *Database, notes quicknote.Notes) {
 		ids = append(ids, n.ID)
 	}
 
-	if nn, err := db.GetAllNotesByIDs(ids); err != nil {
+	if nn, err := db.GetNotesByIDs(ids); err != nil {
 		t.Fatal(err)
 	} else if len(nn) != len(notes) {
 		t.Fatalf("Expected %d notes, got %d", len(notes), len(nn))

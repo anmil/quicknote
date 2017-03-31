@@ -78,7 +78,7 @@ func splitBooksQueryCmdRun(cmd *cobra.Command, args []string) {
 			err = dbConn.EditNoteByIDBook(ids, bk2)
 			exitOnError(err)
 
-			notes, err := dbConn.GetAllNotesByIDs(ids)
+			notes, err := dbConn.GetNotesByIDs(ids)
 			exitOnError(err)
 
 			err = idxConn.IndexNotes(notes)
@@ -122,7 +122,7 @@ func splitBooksIDsCmdRun(cmd *cobra.Command, args []string) {
 		err = dbConn.EditNoteByIDBook(ids, bk2)
 		exitOnError(err)
 
-		notes, err := dbConn.GetAllNotesByIDs(ids)
+		notes, err := dbConn.GetNotesByIDs(ids)
 		exitOnError(err)
 
 		err = idxConn.IndexNotes(notes)
