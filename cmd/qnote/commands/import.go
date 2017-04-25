@@ -163,9 +163,10 @@ func importCmdRun(cmd *cobra.Command, args []string) {
 				exitOnError(err)
 
 				if tag == nil {
-					err = dbConn.CreateTag(n.Tags[i])
+					tag = n.Tags[i]
+					err = dbConn.CreateTag(tag)
 					exitOnError(err)
-					tags[n.Tags[i].Name] = tag
+					tags[tag.Name] = tag
 				}
 			}
 			n.Tags[i] = tag
