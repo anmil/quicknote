@@ -238,3 +238,10 @@ func (b *Index) DeleteIndex() error {
 	}
 	return nil
 }
+
+// Flush tell elasticsearch to flush any pending changes
+func (b *Index) Flush() error {
+	ctx := context.Background()
+	_, err := b.client.Flush().Do(ctx)
+	return err
+}

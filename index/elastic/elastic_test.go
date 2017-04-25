@@ -20,7 +20,6 @@ package elastic
 import (
 	"fmt"
 	"testing"
-	"time"
 
 	"github.com/anmil/quicknote/test"
 )
@@ -72,10 +71,7 @@ func testSearchNote(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	// Have to wait at least 1 second for the index to complete
-	// I hate this, but there is no API to block till completion
-	// https://github.com/elastic/elasticsearch/issues/1063
-	time.Sleep(time.Millisecond * 1000)
+	index.Flush()
 
 	query := fmt.Sprintf("id:%d", n.ID)
 	if ids, total, err := index.SearchNote(query, 10, 0); err != nil {
@@ -95,7 +91,7 @@ func testSearchNotePhrase(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	time.Sleep(time.Millisecond * 1000)
+	index.Flush()
 
 	query := "This is test 1 of the basic par"
 	if ids, total, err := index.SearchNotePhrase(query, nil, "asc", 10, 0); err != nil {
@@ -115,7 +111,7 @@ func testDeleteNote(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	time.Sleep(time.Millisecond * 1000)
+	index.Flush()
 
 	query := fmt.Sprintf("id:%d", n.ID)
 	if ids, total, err := index.SearchNote(query, 10, 0); err != nil {
@@ -132,7 +128,7 @@ func testDeleteNote(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	time.Sleep(time.Millisecond * 1000)
+	index.Flush()
 
 	query = fmt.Sprintf("id:%d", n.ID)
 	if _, total, err := index.SearchNote(query, 10, 0); err != nil {
@@ -150,7 +146,7 @@ func testDeleteBook(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	time.Sleep(time.Millisecond * 1000)
+	index.Flush()
 
 	query := fmt.Sprintf("book:%s", n.Book.Name)
 	if ids, total, err := index.SearchNote(query, 10, 0); err != nil {
@@ -165,7 +161,7 @@ func testDeleteBook(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	time.Sleep(time.Millisecond * 1000)
+	index.Flush()
 
 	query = fmt.Sprintf("book:%s", n.Book.Name)
 	if _, total, err := index.SearchNote(query, 10, 0); err != nil {
